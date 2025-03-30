@@ -20,7 +20,6 @@ DELIMITER ',' CSV HEADER;
 
 -- Now we have loaded both the stock table along with the dailyStock table
 
-
 -- Update for already loaded data: 
 UPDATE stock s
 SET curr_value = d.close_price
