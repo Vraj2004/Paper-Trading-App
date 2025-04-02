@@ -5,7 +5,7 @@ const session = require('express-session');
 
 router.use(
     session({
-        secret: 'your_secret_key',
+        secret: 'testing_key',
         resave: false,
         saveUninitialized: true,
         cookie: { secure: false }

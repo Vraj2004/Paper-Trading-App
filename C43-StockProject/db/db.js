@@ -11,10 +11,9 @@ const pool = new Pool({
 });
 
 pool.on('connect', () => {
-  console.log('✅ Connected to the PostgreSQL database!');
+  console.log('Connected to the database');
 });
 
-// Export the query method to use in other files
 module.exports = {
   query: (text, params) => pool.query(text, params),
 };
