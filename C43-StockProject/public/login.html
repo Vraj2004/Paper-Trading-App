@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Login</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <!-- Paste this inside the <head> of both files -->
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding-top: 60px;
+        text-align: center;
+        background-color: #eef2f7;
+      }
+      form {
+        display: inline-block;
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      input {
+        margin: 10px;
+        padding: 10px;
+        width: 250px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+      button {
+        margin-top: 15px;
+        padding: 10px 20px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required /><br /><br />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required /><br /><br />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <p id="message"></p>
+    <script>
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          try {
+            const res = await fetch("/users/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+              credentials: "include",
+            });
+
+            const data = await res.json(); // ✅ use `res`, not `response`
+
+            if (res.ok) {
+              window.location.href = "/home.html";
+            } else {
+              document.getElementById("message").innerText = `❌ ${
+                data.error || "Login failed"
+              }`;
+            }
+          } catch (error) {
+            console.error("Login error:", error);
+            document.getElementById("message").innerText =
+              "Something went wrong";
+          }
+        });
+    </script>
+  </body>
+</html>

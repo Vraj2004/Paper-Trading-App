@@ -6,12 +6,25 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var portfolioRouter = require('./routes/portfolio');
 
 var app = express();
+
+app.use(
+  session({
+    secret: 'testing_key', // use a strong secret in production
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // set to true if using HTTPS
+      maxAge: 1000 * 60 * 60 * 24 // 1 day
+    }
+  })
+);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,7 +36,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+//app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/portfolio', portfolioRouter);
 

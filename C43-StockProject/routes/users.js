@@ -27,6 +27,15 @@ router.post('/register', async (req, res) => {
             'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING userID',
             [username, password]
         );
+        const newUserID = result.rows[0].userid;
+
+        req.session.userID = newUserID;
+
+        await db.query(
+            'INSERT INTO portfolio (ownerID, cashAmount) VALUES ($1, $2)',
+            [newUserID, 0.00]
+          );
+
         res.status(201).send({
             message: 'User registered successfully',
             userID: result.rows[0].userid

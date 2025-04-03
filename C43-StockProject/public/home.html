@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Home</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f6f8;
+        text-align: center;
+        padding: 40px;
+      }
+
+      h1 {
+        color: #333;
+      }
+
+      #addPortfolioBtn {
+        padding: 10px 20px;
+        margin: 20px 0;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+
+      #addPortfolioBtn:hover {
+        background-color: #0056b3;
+      }
+
+      .portfolio-box {
+        padding: 15px;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        margin: 10px auto;
+        width: 60%;
+        text-align: left;
+      }
+
+      #portfolioList {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Welcome to Your Dashboard</h1>
+    <button id="addPortfolioBtn">➕ Add Portfolio</button>
+
+    <h3>Your Portfolios:</h3>
+    <div id="portfolioList">
+      <p>Loading portfolios...</p>
+    </div>
+
+    <script>
+      async function loadPortfolios() {
+        try {
+          const res = await fetch("/portfolio/my");
+          const data = await res.json();
+
+          const portfolioList = document.getElementById("portfolioList");
+          portfolioList.innerHTML = "";
+
+          if (res.ok && data.length > 0) {
+            data.forEach((p) => {
+              const div = document.createElement("div");
+              div.className = "portfolio-box";
+              div.innerHTML = `
+              <strong>Portfolio ID:</strong> ${p.portfolioid} <br>
+              <strong>Cash Amount:</strong> $${Number(p.cashamount).toFixed(2)}
+            `;
+              portfolioList.appendChild(div);
+            });
+          } else {
+            portfolioList.innerHTML =
+              "<p>No portfolios found. Click above to add one!</p>";
+          }
+        } catch (err) {
+          console.error("Error fetching portfolios:", err);
+          document.getElementById("portfolioList").innerText =
+            "Failed to load portfolios.";
+        }
+      }
+
+      // Load portfolios on page load
+      window.onload = loadPortfolios;
+
+      // Optional: Hook up Add Portfolio button (just an example)
+      document
+        .getElementById("addPortfolioBtn")
+        .addEventListener("click", async () => {
+          const initialCash = prompt(
+            "Enter initial cash amount for new portfolio:"
+          );
+          if (!initialCash || isNaN(initialCash) || Number(initialCash) < 0) {
+            alert("Invalid amount.");
+            return;
+          }
+
+          try {
+            const res = await fetch("/portfolio/create", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ initialCash }),
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+              alert("✅ Portfolio created!");
+              loadPortfolios();
+            } else {
+              alert("❌ Failed to create portfolio: " + data.error);
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            alert("An error occurred while creating portfolio.");
+          }
+        });
+    </script>
+  </body>
+</html>
