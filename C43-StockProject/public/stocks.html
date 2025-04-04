@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>All Stocks</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <h2>All Available Stocks</h2>
+    <div id="stockList">Loading...</div>
+
+    <script>
+      async function fetchStocks() {
+        try {
+          const res = await fetch("/stocks/all");
+          const data = await res.json();
+
+          const stockList = document.getElementById("stockList");
+          stockList.innerHTML = "";
+
+          data.forEach((stock) => {
+            const div = document.createElement("div");
+            div.className = "stock-item";
+            div.innerHTML = `
+            <strong>${stock.symbol}</strong>: $${Number(
+              stock.latestprice
+            ).toFixed(2)}
+            <button onclick="viewStock('${stock.symbol}')">View</button>
+          `;
+            stockList.appendChild(div);
+          });
+        } catch (err) {
+          document.getElementById("stockList").innerText =
+            "Failed to load stocks.";
+          console.error(err);
+        }
+      }
+
+      function viewStock(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = "/stock.html";
+      }
+
+      fetchStocks();
+    </script>
+  </body>
+</html>

@@ -2,7 +2,6 @@ var express = require('express');
 var router = express.Router();
 const db = require('../db/db');
 
-/* GET home page. */
 router.get('/', async function(req, res, next) {
   try {
     const result = await db.query('SELECT * FROM users');

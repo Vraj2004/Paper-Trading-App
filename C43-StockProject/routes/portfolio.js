@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
 
-// ✅ Create Portfolio
 router.post('/create', async (req, res) => {
   const userID = req.session.userID;
   const { initialCash } = req.body;
@@ -41,7 +40,6 @@ router.get('/my', async (req, res) => {
   }
 });
 
-// ✅ Deposit cash
 router.post('/deposit', async (req, res) => {
   const { portfolioID, amount } = req.body;
 
@@ -66,7 +64,6 @@ router.post('/deposit', async (req, res) => {
   }
 });
 
-// ✅ Withdraw cash
 router.post('/withdraw', async (req, res) => {
   const { portfolioID, amount } = req.body;
 

@@ -1,0 +1,74 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f3f5f8;
+  text-align: center;
+  padding-top: 60px;
+  margin: 0;
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+#portfolioList {
+  margin-top: 20px;
+}
+
+button {
+  padding: 12px 24px;
+  margin: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+#addPortfolioBtn {
+  background-color: #4a90e2;
+  color: white;
+}
+#addPortfolioBtn:hover {
+  background-color: #357ab8;
+}
+
+#logout {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background-color: #ff5e57;
+  color: white;
+}
+#logout:hover {
+  background-color: #d94b48;
+}
+
+.portfolio-box {
+  background: white;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 400px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  text-align: left;
+}
+
+#stocks {
+  margin-top: 15px;
+  padding: 10px 20px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+#stocks:hover {
+  background-color: #218838;
+}

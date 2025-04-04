@@ -2,52 +2,15 @@
 <html>
   <head>
     <title>Home</title>
-    <link rel="stylesheet" href="/stylesheets/style.css" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f6f8;
-        text-align: center;
-        padding: 40px;
-      }
-
-      h1 {
-        color: #333;
-      }
-
-      #addPortfolioBtn {
-        padding: 10px 20px;
-        margin: 20px 0;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-
-      #addPortfolioBtn:hover {
-        background-color: #0056b3;
-      }
-
-      .portfolio-box {
-        padding: 15px;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        margin: 10px auto;
-        width: 60%;
-        text-align: left;
-      }
-
-      #portfolioList {
-        margin-top: 20px;
-      }
-    </style>
+    <link rel="stylesheet" href="/stylesheets/home.css" />
   </head>
 
   <body>
     <h1>Welcome to Your Dashboard</h1>
-    <button id="addPortfolioBtn">➕ Add Portfolio</button>
+
+    <button id="stocks" style="float: left">Go to Stocks</button>
+    <button id="logout" style="float: right">Logout</button>
+    <button id="addPortfolioBtn">Add Portfolio</button>
 
     <h3>Your Portfolios:</h3>
     <div id="portfolioList">
@@ -71,6 +34,11 @@
               <strong>Portfolio ID:</strong> ${p.portfolioid} <br>
               <strong>Cash Amount:</strong> $${Number(p.cashamount).toFixed(2)}
             `;
+              div.style.cursor = "pointer";
+              div.addEventListener("click", () => {
+                localStorage.setItem("selectedPortfolioID", p.portfolioid);
+                window.location.href = "/portfolio.html";
+              });
               portfolioList.appendChild(div);
             });
           } else {
@@ -84,10 +52,8 @@
         }
       }
 
-      // Load portfolios on page load
       window.onload = loadPortfolios;
 
-      // Optional: Hook up Add Portfolio button (just an example)
       document
         .getElementById("addPortfolioBtn")
         .addEventListener("click", async () => {
@@ -110,16 +76,38 @@
 
             const data = await res.json();
             if (res.ok) {
-              alert("✅ Portfolio created!");
+              alert("Portfolio created!");
               loadPortfolios();
             } else {
-              alert("❌ Failed to create portfolio: " + data.error);
+              alert("Failed to create portfolio: " + data.error);
             }
           } catch (error) {
             console.error("Error:", error);
             alert("An error occurred while creating portfolio.");
           }
         });
+
+      document.getElementById("logout").addEventListener("click", async () => {
+        try {
+          const res = await fetch("/users/logout", {
+            method: "GET",
+            credentials: "include", // important to include the session cookie
+          });
+
+          if (res.ok) {
+            window.location.href = "/index.html"; // ✅ redirect to landing page
+          } else {
+            alert("Logout failed");
+          }
+        } catch (err) {
+          console.error("Logout error:", err);
+          alert("An error occurred during logout.");
+        }
+      });
+
+      document.getElementById("stocks").addEventListener("click", () => {
+        window.location.href = "/stocks.html";
+      });
     </script>
   </body>
 </html>

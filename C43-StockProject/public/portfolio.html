@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Portfolio Details</title>
+    <link rel="stylesheet" href="/stylesheets/portfolio.css" />
+  </head>
+
+  <body>
+    <div class="portfolio-info">
+      <h2>Portfolio Overview</h2>
+      <p id="cashAmount">Loading...</p>
+      <h3>Stock Holdings (Coming Soon)</h3>
+      <ul id="stockList">
+        <li>None</li>
+      </ul>
+      <button onclick="handleDeposit()">Deposit</button>
+      <button onclick="handleWithdraw()">Withdraw</button>
+    </div>
+
+    <script>
+      const portfolioID = localStorage.getItem("selectedPortfolioID");
+
+      async function fetchPortfolio() {
+        try {
+          const res = await fetch("/portfolio/my");
+          const data = await res.json();
+
+          const selected = data.find((p) => p.portfolioid == portfolioID);
+          if (selected) {
+            document.getElementById("cashAmount").innerText =
+              "Cash Balance: $" + Number(selected.cashamount).toFixed(2);
+          } else {
+            document.getElementById("cashAmount").innerText =
+              "Portfolio not found!";
+          }
+        } catch (err) {
+          console.error("Failed to load portfolio:", err);
+        }
+      }
+
+      async function handleDeposit() {
+        const amount = prompt("Enter deposit amount:");
+        if (!amount || isNaN(amount) || Number(amount) <= 0)
+          return alert("Invalid amount");
+        const res = await fetch("/portfolio/deposit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portfolioID, amount }),
+        });
+        if (res.ok) {
+          alert("Deposit successful!");
+          fetchPortfolio();
+        } else {
+          alert("Deposit failed.");
+        }
+      }
+
+      async function handleWithdraw() {
+        const amount = prompt("Enter amount to withdraw:");
+        if (!amount || isNaN(amount) || Number(amount) <= 0)
+          return alert("Invalid amount");
+        const res = await fetch("/portfolio/withdraw", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portfolioID, amount }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("Withdrawal successful!");
+          fetchPortfolio();
+        } else {
+          alert("Error: " + data.error);
+        }
+      }
+
+      fetchPortfolio();
+    </script>
+  </body>
+</html>

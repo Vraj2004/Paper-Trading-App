@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stock Info</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <h2 id="stockTitle">Loading...</h2>
+    <p id="stockPrice"></p>
+    <p id="stockOwned">Shares Owned: 0</p>
+
+    <button id="buyBtn">Buy</button>
+    <button id="sellBtn">Sell</button>
+
+    <script>
+      async function loadStockDetails() {
+        const symbol = localStorage.getItem("selectedStock");
+
+        if (!symbol) {
+          document.body.innerHTML = "No stock selected.";
+          return;
+        }
+
+        try {
+          const res = await fetch(`/stocks/${symbol}`);
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to fetch stock");
+          }
+
+          document.getElementById("stockTitle").innerText = `Stock: ${symbol}`;
+          document.getElementById(
+            "stockPrice"
+          ).innerText = `Current Price: $${Number(data.latestprice).toFixed(
+            2
+          )}`;
+        } catch (err) {
+          console.error(err);
+          document.body.innerHTML = "Failed to load stock.";
+        }
+      }
+      loadStockDetails();
+    </script>
+  </body>
+</html>
