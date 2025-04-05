@@ -1,0 +1,54 @@
+.button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* spacing between buttons */
+  }
+
+  .page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f7fb;
+    margin: 0;
+  }
+  
+  
+  button {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.3s ease;
+  }
+  
+  #buyBtn {
+    background-color: #218838;
+  }
+  
+  #buyBtn:hover {
+    background-color: #1e7e34;
+  }
+  
+  #sellBtn {
+    background-color: #dc3545;
+  }
+  
+  #sellBtn:hover {
+    background-color: #c82333;
+  }
+
+  .stock-container {
+    background: #fff;
+    padding: 30px 40px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  

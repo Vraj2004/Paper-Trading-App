@@ -2,11 +2,11 @@
 <html>
   <head>
     <title>All Stocks</title>
-    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <link rel="stylesheet" href="/stylesheets/stockPage.css" />
   </head>
   <body>
-    <h2>All Available Stocks</h2>
-    <div id="stockList">Loading...</div>
+    <h2 class="page-title">All Available Stocks</h2>
+    <div id="stockList" class="stock-container">Loading...</div>
 
     <script>
       async function fetchStocks() {
@@ -19,13 +19,14 @@
 
           data.forEach((stock) => {
             const div = document.createElement("div");
-            div.className = "stock-item";
+            div.className = "stock-card";
             div.innerHTML = `
-            <strong>${stock.symbol}</strong>: $${Number(
-              stock.latestprice
-            ).toFixed(2)}
-            <button onclick="viewStock('${stock.symbol}')">View</button>
-          `;
+              <h3>${stock.symbol}</h3>
+              <p>Price: $${Number(stock.latestprice).toFixed(2)}</p>
+              <button class="view-btn" onclick="viewStock('${
+                stock.symbol
+              }')">View</button>
+            `;
             stockList.appendChild(div);
           });
         } catch (err) {

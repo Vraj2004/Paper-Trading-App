@@ -2,15 +2,21 @@
 <html>
   <head>
     <title>Stock Info</title>
-    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <link rel="stylesheet" href="/stylesheets/stock.css" />
   </head>
   <body>
-    <h2 id="stockTitle">Loading...</h2>
-    <p id="stockPrice"></p>
-    <p id="stockOwned">Shares Owned: 0</p>
+    <div class="page-wrapper">
+      <div class="stock-container">
+        <h2 id="stockTitle">Loading...</h2>
+        <p id="stockPrice"></p>
+        <p id="stockOwned">Shares Owned: 0</p>
 
-    <button id="buyBtn">Buy</button>
-    <button id="sellBtn">Sell</button>
+        <div class="button-group">
+          <button id="buyBtn">Buy</button>
+          <button id="sellBtn">Sell</button>
+        </div>
+      </div>
+    </div>
 
     <script>
       async function loadStockDetails() {

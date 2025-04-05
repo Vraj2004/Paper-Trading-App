@@ -9,8 +9,10 @@
     <h1>Welcome to Your Dashboard</h1>
 
     <button id="stocks" style="float: left">Go to Stocks</button>
+    <button id="stocklists" style="float: bottom">Go to Stocklists</button>
     <button id="logout" style="float: right">Logout</button>
     <button id="addPortfolioBtn">Add Portfolio</button>
+    <button id="addStockData">Add Stock Data</button>
 
     <h3>Your Portfolios:</h3>
     <div id="portfolioList">
@@ -106,7 +108,11 @@
       });
 
       document.getElementById("stocks").addEventListener("click", () => {
-        window.location.href = "/stocks.html";
+        window.location.href = "/stocksHome.html";
+      });
+
+      document.getElementById("addStockData").addEventListener("click", () => {
+        window.location.href = "/stocklistHome.html";
       });
     </script>
   </body>
