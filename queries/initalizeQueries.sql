@@ -15,9 +15,25 @@ CREATE TABLE users (
 CREATE TABLE friendReq (
     senderID INT REFERENCES users(userID),
     receiverID INT REFERENCES users(userID),
-    status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) CHECK (status IN ('pending', 'accepted', 'rejected')) NOT NULL,
     PRIMARY KEY (senderID, receiverID)
 );
+-- Create a trigger to update last_updated column on friendReq table
+CREATE OR REPLACE FUNCTION update_last_updated()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.last_updated = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trigger_update_last_updated
+BEFORE UPDATE ON friendReq
+FOR EACH ROW
+EXECUTE FUNCTION update_last_updated();
+
 
 -- Create Stock List Table
 CREATE TABLE stocklist (
