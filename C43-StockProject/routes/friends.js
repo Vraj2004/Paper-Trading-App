@@ -31,6 +31,9 @@ async function requestExists(userID1, userID2) {
             console.log(updateResult);
             return false;
         }
+        if (result.rows[0].status === 'rejected') {
+            return "friend request rejected, please wait for 5 minutes to send a new request";
+        }
         console.log(result.rows, result.rows.length > 0);
         return result.rows.length > 0;
     } catch (err) {
@@ -38,7 +41,7 @@ async function requestExists(userID1, userID2) {
         throw new Error('Failed to check if request exists');
     }
 }
-
+//get all friends of the user
 router.get('/:userID', async (req, res) => {
     const { userID } = req.params;
     console.log(userID);
@@ -73,6 +76,7 @@ router.get('/:userID', async (req, res) => {
 
 });
 
+//make a friend request
 router.post('/reqs/create/:userID', async (req, res) => {
     const userID = req.session.userID;
     const { recieverID } = req.body;
@@ -91,9 +95,13 @@ router.post('/reqs/create/:userID', async (req, res) => {
     if (checkUser.rows.length === 0) {
         return res.status(400).json({ error: "User does not exist" });
     }
+    const checkReq = await requestExists(userID, recieverID);
     //check if the request already exists
-    if (await requestExists(userID, recieverID)) {
+    if (checkReq === false) {
         return res.status(400).json({ error: "Friend request already exists" });
+    }
+    else if (checkReq !== true) {
+        return res.status(400).json({ error: checkReq });
     }
     try {
         const response = await db.query(
@@ -110,6 +118,7 @@ router.post('/reqs/create/:userID', async (req, res) => {
 
 });
 
+//reject a friend request
 router.post('/reqs/reject/', async (req, res) => {
     const userID = req.session.userID;
     const { senderID } = req.body;
@@ -120,8 +129,12 @@ router.post('/reqs/reject/', async (req, res) => {
     if (userID === senderID) {
         return res.status(400).json({ error: "Cannot reject friend request from yourself" });
     }
-    if (!(await requestExists(userID, senderID))) {
-        return res.status(400).json({ error: "Friend request does not exist" });
+    const checkReq = await requestExists(userID, senderID);
+    if (checkReq === false) {
+        return res.status(400).json({ error: "Friend request already exists" });
+    }
+    else if (checkReq !== true) {
+        return res.status(400).json({ error: checkReq });
     }
     try {
         const response = await db.query(
@@ -139,6 +152,8 @@ router.post('/reqs/reject/', async (req, res) => {
     }
 
 });
+
+//accept a friend request
 router.post('/reqs/accept/', async (req, res) => {
     const userID = req.session.userID;
     const { senderID } = req.body;
@@ -149,10 +164,15 @@ router.post('/reqs/accept/', async (req, res) => {
     if (userID === senderID) {
         return res.status(400).json({ error: "Cannot accept friend request from yourself" });
     }
-    if (!(await requestExists(userID, senderID))) {
-        return res.status(400).json({ error: "Friend request does not exist" });
-
+    const checkReq = await requestExists(userID, senderID);
+    //check if the request already exists
+    if (checkReq === false) {
+        return res.status(400).json({ error: "Friend request already exists" });
     }
+    else if (checkReq !== true) {
+        return res.status(400).json({ error: checkReq });
+    }
+
     try {
         const response = await db.query(
             `UPDATE friendReq SET status = 'accepted' WHERE senderID = $1 AND receiverID = $2 AND status='pending' RETURNING *`,
@@ -167,7 +187,7 @@ router.post('/reqs/accept/', async (req, res) => {
 });
 
 
-//get all friend requests sent by the user
+//get all pending friend requests sent by the user
 router.get('/reqs/sent/:userID', async (req, res) => {
     const { userID } = req.params;
     console.log(userID);
@@ -185,7 +205,7 @@ router.get('/reqs/sent/:userID', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch friends' });
     }
 });
-//get all friend requests sent to the user
+//get all pending friend requests sent to the user
 router.get('/reqs/recieved/:userID', async (req, res) => {
     const { userID } = req.params;
     console.log(userID);
