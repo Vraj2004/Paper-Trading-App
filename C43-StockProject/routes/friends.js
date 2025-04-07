@@ -97,10 +97,10 @@ router.post('/reqs/create/:userID', async (req, res) => {
     }
     const checkReq = await requestExists(userID, recieverID);
     //check if the request already exists
-    if (checkReq === false) {
+    if (checkReq === true) {
         return res.status(400).json({ error: "Friend request already exists" });
     }
-    else if (checkReq !== true) {
+    else if (checkReq !== false) {
         return res.status(400).json({ error: checkReq });
     }
     try {
@@ -138,7 +138,7 @@ router.post('/reqs/reject/', async (req, res) => {
     }
     try {
         const response = await db.query(
-            `UPDATE friendReq SET status = 'rejected' WHERE senderID = $1 AND receiverID = $2 AND status='pending' RETURNING *`,
+            `UPDATE friendReq SET status = 'rejected' WHERE senderID = $1 AND receiverID = $2 AND status!='rejected' RETURNING *`,
             [senderID, userID]
         );
         if (response.rows.length === 0) {
@@ -167,7 +167,7 @@ router.post('/reqs/accept/', async (req, res) => {
     const checkReq = await requestExists(userID, senderID);
     //check if the request already exists
     if (checkReq === false) {
-        return res.status(400).json({ error: "Friend request already exists" });
+        return res.status(400).json({ error: "Friend request does not exists" });
     }
     else if (checkReq !== true) {
         return res.status(400).json({ error: checkReq });
@@ -178,6 +178,9 @@ router.post('/reqs/accept/', async (req, res) => {
             `UPDATE friendReq SET status = 'accepted' WHERE senderID = $1 AND receiverID = $2 AND status='pending' RETURNING *`,
             [senderID, userID]
         );
+        if (response.rows.length === 0) {
+            return res.status(400).json({ error: "sender does not exist" });
+        }
         return res.status(200).json(response.rows);
     }
     catch (err) {
