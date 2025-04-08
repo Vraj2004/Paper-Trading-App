@@ -1,44 +1,98 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f7fa;
-    text-align: center;
-    padding-top: 60px;
-  }
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+}
 
-  .portfolio-info {
-    background: white;
-    display: inline-block;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+}
 
-  button {
-    margin: 10px;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-  }
+#stocks {
+  margin-bottom: 40px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: bold;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  button:hover {
-    background-color: #0056b3;
-  };
+#stocks:hover {
+  background-color: #218838;
+}
 
-  #stocks {
-    margin-top: 15px;
-    padding: 10px 20px;
-    border: none;
-    background-color: #28a745;
-    color: white;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-  }
-  
-  #stocks:hover {
-    background-color: #218838;
-  }
+.portfolio-card {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.portfolio-card h2 {
+  font-size: 26px;
+  margin-bottom: 15px;
+}
+
+.portfolio-card h3 {
+  font-size: 20px;
+  margin: 20px 0 10px;
+}
+
+.cash {
+  font-size: 18px;
+  color: #333;
+}
+
+ul#stockList {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+ul#stockList li {
+  margin: 6px 0;
+  font-weight: 500;
+  color: #444;
+}
+
+.button-group {
+  margin-top: 25px;
+}
+
+.button-group button {
+  margin: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button-group button:first-child {
+  background-color: #007bff;
+}
+
+.button-group button:first-child:hover {
+  background-color: #0056b3;
+}
+
+.button-group button:last-child {
+  background-color: #dc3545;
+}
+
+.button-group button:last-child:hover {
+  background-color: #b02a37;
+}

@@ -6,19 +6,23 @@
   </head>
 
   <body>
-    <button id="stocks" style="float: left">Go to Stocks</button>
+    <div class="container">
+      <button id="stocks">📈 Go to Stocks</button>
 
-    <div class="portfolio-info">
-      <h2>Portfolio Overview</h2>
-      <p id="cashAmount">Loading...</p>
+      <div class="portfolio-card">
+        <h2>📊 Portfolio Overview</h2>
+        <p id="cashAmount" class="cash">Loading...</p>
 
-      <h3>Stock Holdings</h3>
-      <ul id="stockList">
-        <li>Loading...</li>
-      </ul>
+        <h3>💼 Stock Holdings</h3>
+        <ul id="stockList">
+          <li>Loading...</li>
+        </ul>
 
-      <button onclick="handleDeposit()">Deposit</button>
-      <button onclick="handleWithdraw()">Withdraw</button>
+        <div class="button-group">
+          <button onclick="handleDeposit()">💰 Deposit</button>
+          <button onclick="handleWithdraw()">💸 Withdraw</button>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -52,7 +56,7 @@
           ul.innerHTML = "";
 
           if (data.length === 0) {
-            ul.innerHTML = "<li>None</li>";
+            ul.innerHTML = "<li>No stock holdings</li>";
             return;
           }
 
@@ -107,7 +111,6 @@
         }
       }
 
-      // Load on page load
       fetchPortfolio().then(loadHoldings);
 
       document.getElementById("stocks").addEventListener("click", () => {
