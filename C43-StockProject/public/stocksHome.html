@@ -37,6 +37,7 @@
       }
 
       function viewStock(symbol) {
+        console.log(symbol);
         localStorage.setItem("selectedStock", symbol);
         window.location.href = "/stock.html";
       }

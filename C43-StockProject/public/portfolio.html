@@ -6,15 +6,23 @@
   </head>
 
   <body>
-    <div class="portfolio-info">
-      <h2>Portfolio Overview</h2>
-      <p id="cashAmount">Loading...</p>
-      <h3>Stock Holdings (Coming Soon)</h3>
-      <ul id="stockList">
-        <li>None</li>
-      </ul>
-      <button onclick="handleDeposit()">Deposit</button>
-      <button onclick="handleWithdraw()">Withdraw</button>
+    <div class="container">
+      <button id="stocks">📈 Go to Stocks</button>
+
+      <div class="portfolio-card">
+        <h2>📊 Portfolio Overview</h2>
+        <p id="cashAmount" class="cash">Loading...</p>
+
+        <h3>💼 Stock Holdings</h3>
+        <ul id="stockList">
+          <li>Loading...</li>
+        </ul>
+
+        <div class="button-group">
+          <button onclick="handleDeposit()">💰 Deposit</button>
+          <button onclick="handleWithdraw()">💸 Withdraw</button>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -38,18 +46,46 @@
         }
       }
 
+      async function loadHoldings() {
+        try {
+          const res = await fetch(
+            `/portfolio/holdings?portfolioID=${portfolioID}`
+          );
+          const data = await res.json();
+          const ul = document.getElementById("stockList");
+          ul.innerHTML = "";
+
+          if (data.length === 0) {
+            ul.innerHTML = "<li>No stock holdings</li>";
+            return;
+          }
+
+          data.forEach((row) => {
+            const li = document.createElement("li");
+            li.textContent = `${row.symbol}: ${row.volume} shares`;
+            ul.appendChild(li);
+          });
+        } catch (err) {
+          console.error("Failed to load holdings:", err);
+          document.getElementById("stockList").innerHTML =
+            "<li>Error loading holdings</li>";
+        }
+      }
+
       async function handleDeposit() {
         const amount = prompt("Enter deposit amount:");
         if (!amount || isNaN(amount) || Number(amount) <= 0)
           return alert("Invalid amount");
+
         const res = await fetch("/portfolio/deposit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portfolioID, amount }),
         });
+
         if (res.ok) {
           alert("Deposit successful!");
-          fetchPortfolio();
+          await fetchPortfolio();
         } else {
           alert("Deposit failed.");
         }
@@ -59,21 +95,27 @@
         const amount = prompt("Enter amount to withdraw:");
         if (!amount || isNaN(amount) || Number(amount) <= 0)
           return alert("Invalid amount");
+
         const res = await fetch("/portfolio/withdraw", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portfolioID, amount }),
         });
+
         const data = await res.json();
         if (res.ok) {
           alert("Withdrawal successful!");
-          fetchPortfolio();
+          await fetchPortfolio();
         } else {
           alert("Error: " + data.error);
         }
       }
 
-      fetchPortfolio();
+      fetchPortfolio().then(loadHoldings);
+
+      document.getElementById("stocks").addEventListener("click", () => {
+        window.location.href = "/stocksHome.html";
+      });
     </script>
   </body>
 </html>
