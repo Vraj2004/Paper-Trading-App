@@ -3,7 +3,11 @@
 
 CREATE DATABASE stockproject;
 
-
+-- Create Stock Table
+CREATE TABLE stock (
+    symbol VARCHAR(10) PRIMARY KEY,
+    curr_value NUMERIC(10, 2) CHECK (curr_value >= 0)
+);
 -- Create Users Table
 CREATE TABLE users (
     userID SERIAL PRIMARY KEY,
@@ -42,6 +46,11 @@ CREATE TABLE stocklist (
     priv_status VARCHAR(20) CHECK (priv_status IN ('private', 'shared', 'public')) NOT NULL
 );
 
+CREATE TABLE stocklistStock (
+    stocklistID INT REFERENCES stocklist(stocklistID),
+    symbol VARCHAR(10) REFERENCES stock(symbol),
+    PRIMARY KEY (stocklistID, symbol)
+);
 -- Create Shared Stock List Table
 CREATE TABLE sharedStockList (
     stocklistID INT REFERENCES stocklist(stocklistID),
@@ -73,11 +82,7 @@ CREATE TABLE holding (
     PRIMARY KEY (portfolioID, symbol)
 );
 
--- Create Stock Table
-CREATE TABLE stock (
-    symbol VARCHAR(10) PRIMARY KEY,
-    curr_value NUMERIC(10, 2) CHECK (curr_value >= 0)
-);
+
 
 -- Create Transaction Table
 CREATE TABLE transaction (

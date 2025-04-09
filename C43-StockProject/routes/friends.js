@@ -45,8 +45,8 @@ async function requestExists(userID1, userID2) {
 router.get('/:userID', async (req, res) => {
     const { userID } = req.params;
     console.log(userID);
-    if (!userID) {
-        return res.status(400).json({ error: "Invalid input, missing userID" });
+    if (!userID || userID === undefined || userID === null) {
+        return res.status(401).json({ error: "Invalid input, missing userID" });
     }
     try {
         const response = await db.query(
@@ -58,7 +58,7 @@ router.get('/:userID', async (req, res) => {
             CASE 
                 WHEN senderID = $1 THEN receiver.username 
                 ELSE sender.username 
-            END AS username
+            END AS username, status
             FROM friendReq
             LEFT JOIN users sender ON friendReq.senderID = sender.userID
             LEFT JOIN users receiver ON friendReq.receiverID = receiver.userID
@@ -77,7 +77,7 @@ router.get('/:userID', async (req, res) => {
 });
 
 //make a friend request
-router.post('/reqs/create/:userID', async (req, res) => {
+router.post('/reqs/create/', async (req, res) => {
     const userID = req.session.userID;
     const { recieverID } = req.body;
     console.log(userID, recieverID);
@@ -196,7 +196,7 @@ router.get('/reqs/sent/:userID', async (req, res) => {
     console.log(userID);
     try {
         const response = await db.query(
-            `SELECT friendreq.receiverid AS receiverid, username
+            `SELECT friendreq.receiverid AS receiverid, username,status
             FROM friendreq JOIN users ON friendreq.receiverid = users.userid
             WHERE senderid = $1 AND status!='accepted'`,
             [userID]
@@ -216,7 +216,8 @@ router.get('/reqs/recieved/:userID', async (req, res) => {
         const response = await db.query(
             `SELECT 
             friendreq.senderid AS senderid, 
-            sender.username AS username
+            sender.username AS username,
+            status
             FROM friendreq 
             JOIN users sender ON friendreq.senderid = sender.userid
             WHERE receiverid = $1 AND status!='accepted'`,

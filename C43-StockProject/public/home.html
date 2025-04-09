@@ -3,18 +3,30 @@
   <head>
     <title>Home</title>
     <link rel="stylesheet" href="/stylesheets/home.css" />
+    <script src="/javascripts/navigationbar.js" defer></script>
   </head>
 
   <body>
     <h1>Welcome to Your Dashboard</h1>
 
-    <button id="stocks" style="float: left">Go to Stocks</button>
-    <button id="stocklists" style="float: bottom">Go to Stocklists</button>
-    <button id="logout" style="float: right">Logout</button>
-    <button id="addPortfolioBtn">Add Portfolio</button>
-    <button id="addStockData">Add Stock Data</button>
+    <nav>
+      <div>
+        <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+        <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+        <a id="friends" href="/friends.html">Go to Friends</a>
+        <a id="home" href="/home.html">Go to Home</a>
+      </div>
+
+      <div>
+        <button id="logout">Logout</button>
+      </div>
+    </nav>
 
     <h3>Your Portfolios:</h3>
+    <div>
+      <button id="addPortfolioBtn">Add Portfolio</button>
+      <button id="addStockData">Add Stock Data</button>
+    </div>
     <div id="portfolioList">
       <p>Loading portfolios...</p>
     </div>
@@ -88,24 +100,6 @@
             alert("An error occurred while creating portfolio.");
           }
         });
-
-      document.getElementById("logout").addEventListener("click", async () => {
-        try {
-          const res = await fetch("/users/logout", {
-            method: "GET",
-            credentials: "include", // important to include the session cookie
-          });
-
-          if (res.ok) {
-            window.location.href = "/index.html"; // ✅ redirect to landing page
-          } else {
-            alert("Logout failed");
-          }
-        } catch (err) {
-          console.error("Logout error:", err);
-          alert("An error occurred during logout.");
-        }
-      });
 
       document.getElementById("stocks").addEventListener("click", () => {
         window.location.href = "/stocksHome.html";

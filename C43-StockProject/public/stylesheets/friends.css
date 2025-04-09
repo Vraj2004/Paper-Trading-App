@@ -1,0 +1,106 @@
+/* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-top: 20px;
+  color: #444;
+}
+
+h2,
+h3 {
+  color: #555;
+}
+
+/* Layout */
+div.section {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+div.section h2 {
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+/* Lists */
+ul {
+  list-style-type: none;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
+ul li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+ul li:last-child {
+  border-bottom: none;
+}
+
+ul li:hover {
+  background-color: #f1f1f1;
+}
+
+/* Form */
+form.send-request {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+form.send-request label {
+  font-weight: bold;
+}
+
+form.send-request input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form.send-request button {
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.status {
+  font-size: 14px;
+  font-style: italic;
+  color: #28a745;
+  margin-top: 10px;
+  text-align: right;
+}
+
+form.send-request button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  div.section {
+    margin-bottom: 20px;
+  }
+
+  div.section:last-child {
+    margin-bottom: 0;
+  }
+
+  div[style="display: flex; gap: 20px"] {
+    flex-direction: column;
+  }
+}

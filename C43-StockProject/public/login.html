@@ -38,6 +38,7 @@
             const data = await res.json(); // ✅ use `res`, not `response`
 
             if (res.ok) {
+              localStorage.setItem("userID", data.userID); // Store userID in localStorage
               window.location.href = "/home.html";
             } else {
               document.getElementById("message").innerText = `❌ ${
