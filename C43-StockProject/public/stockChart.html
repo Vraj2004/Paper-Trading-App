@@ -53,7 +53,6 @@
     <h2 id="chartTitle">📈 Loading Chart...</h2>
 
     <div class="interval-buttons">
-      <button data-interval="1d">1 Day</button>
       <button data-interval="1w">1 Week</button>
       <button data-interval="1m" class="active">1 Month</button>
       <button data-interval="1y">1 Year</button>
@@ -77,7 +76,6 @@
       async function loadChart(interval) {
         chartTitle.textContent = `${symbol} Stock Chart (${interval.toUpperCase()})`;
 
-        // Highlight active interval button
         document.querySelectorAll(".interval-buttons button").forEach((btn) => {
           btn.classList.remove("active");
           if (btn.dataset.interval === interval) btn.classList.add("active");
@@ -96,8 +94,6 @@
               labels = data.map((point) => point.date);
               prices = data.map((point) => point.close);
             }
-          } else {
-            console.warn("No data for this interval.");
           }
         } catch (err) {
           console.error("Failed to fetch data:", err);
@@ -143,14 +139,29 @@
           .getElementById("predictionChart")
           .getContext("2d");
 
-        const lastPrice = prices.length > 0 ? prices[prices.length - 1] : 100; // fallback if no data
-        const prediction = [];
+        const last30 = prices.slice(-30);
         const futureLabels = [];
+        const prediction = [];
 
-        for (let i = 1; i <= 7; i++) {
-          const projected = lastPrice * (1 + 0.003 * i);
-          prediction.push(projected.toFixed(2));
-          futureLabels.push(`Day +${i}`);
+        if (last30.length > 1) {
+          const n = last30.length;
+          const x = Array.from({ length: n }, (_, i) => i + 1);
+          const y = last30.map(Number);
+
+          const xSum = x.reduce((a, b) => a + b, 0);
+          const ySum = y.reduce((a, b) => a + b, 0);
+          const xySum = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+          const x2Sum = x.reduce((sum, xi) => sum + xi * xi, 0);
+
+          const slope = (n * xySum - xSum * ySum) / (n * x2Sum - xSum ** 2);
+          const intercept = (ySum - slope * xSum) / n;
+
+          for (let i = 1; i <= 7; i++) {
+            const futureX = n + i;
+            const predictedY = slope * futureX + intercept;
+            prediction.push(predictedY.toFixed(2));
+            futureLabels.push(`Day +${i}`);
+          }
         }
 
         predictionChart = new Chart(ctx2, {
@@ -162,7 +173,6 @@
                 label: "Predicted Closing Price",
                 data: prediction,
                 borderColor: "#28a745",
-                borderDash: [6, 6],
                 borderWidth: 2,
                 pointRadius: 3,
                 tension: 0.1,
