@@ -26,6 +26,9 @@
               <button class="view-btn" onclick="viewStock('${
                 stock.symbol
               }')">View</button>
+               <button class="chart-btn" onclick="viewChart('${
+                 stock.symbol
+               }')">Chart</button>
             `;
             stockList.appendChild(div);
           });
@@ -40,6 +43,11 @@
         console.log(symbol);
         localStorage.setItem("selectedStock", symbol);
         window.location.href = "/stock.html";
+      }
+
+      function viewChart(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = `/stockChart.html?symbol=${symbol}`;
       }
 
       fetchStocks();
