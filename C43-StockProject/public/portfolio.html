@@ -55,6 +55,8 @@
           const ul = document.getElementById("stockList");
           ul.innerHTML = "";
 
+          let totalStockValue = 0;
+
           if (data.length === 0) {
             ul.innerHTML = "<li>No stock holdings</li>";
             return;
@@ -62,9 +64,40 @@
 
           data.forEach((row) => {
             const li = document.createElement("li");
-            li.textContent = `${row.symbol}: ${row.volume} shares`;
+
+            const currValue = Number(row.curr_value);
+            const totalValue = Number(row.total_value);
+
+            if (isNaN(currValue) || isNaN(totalValue)) {
+              console.warn(
+                `Missing or invalid price data for ${row.symbol}`,
+                row
+              );
+              li.textContent = `${row.symbol}: ${row.volume} shares × ❌ Price Missing`;
+              ul.appendChild(li);
+              return;
+            }
+
+            li.textContent = `${row.symbol}: ${
+              row.volume
+            } shares × $${currValue.toFixed(2)} = $${totalValue.toFixed(2)}`;
             ul.appendChild(li);
+            totalStockValue += totalValue;
           });
+
+          const portfolioValueEl = document.createElement("li");
+          portfolioValueEl.innerHTML = `<strong>📈 Total Stock Value:</strong> $${totalStockValue.toFixed(
+            2
+          )}`;
+          ul.appendChild(portfolioValueEl);
+
+          const cashText = document.getElementById("cashAmount").innerText;
+          const cashAmount = parseFloat(cashText.replace(/[^0-9.]/g, ""));
+          const totalValueEl = document.createElement("li");
+          totalValueEl.innerHTML = `<strong>💰 Total Portfolio Value:</strong> $${(
+            cashAmount + totalStockValue
+          ).toFixed(2)}`;
+          ul.appendChild(totalValueEl);
         } catch (err) {
           console.error("Failed to load holdings:", err);
           document.getElementById("stockList").innerHTML =
@@ -86,6 +119,7 @@
         if (res.ok) {
           alert("Deposit successful!");
           await fetchPortfolio();
+          await loadHoldings();
         } else {
           alert("Deposit failed.");
         }
@@ -106,6 +140,7 @@
         if (res.ok) {
           alert("Withdrawal successful!");
           await fetchPortfolio();
+          await loadHoldings();
         } else {
           alert("Error: " + data.error);
         }

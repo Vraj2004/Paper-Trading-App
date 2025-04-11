@@ -175,7 +175,13 @@ router.get('/holdings', async (req, res) => {
 
   try {
     const result = await db.query(
-      `SELECT symbol, volume FROM holding WHERE portfolioID = $1`,
+      `
+      SELECT h.symbol, h.volume, s.curr_value,
+             ROUND(h.volume * s.curr_value, 2) AS total_value
+      FROM holding h
+      JOIN stock s ON h.symbol = s.symbol
+      WHERE h.portfolioID = $1
+      `,
       [portfolioID]
     );
     res.json(result.rows);
