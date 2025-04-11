@@ -41,6 +41,60 @@ router.get("/chart-data", async (req, res) => {
   }
 });
 
+router.get("/history", async (req, res) => {
+  const { symbol, interval } = req.query;
+
+  if (!symbol || !interval) {
+    return res.status(400).json({ error: "Missing symbol or interval" });
+  }
+
+  let intervalCondition = "";
+  switch (interval) {
+    case "1d":
+      intervalCondition = "AND timestamp >= NOW() - INTERVAL '1 day'";
+      break;
+    case "1w":
+      intervalCondition = "AND timestamp >= NOW() - INTERVAL '7 days'";
+      break;
+    case "1m":
+      intervalCondition = "AND timestamp >= NOW() - INTERVAL '1 month'";
+      break;
+    case "1y":
+      intervalCondition = "AND timestamp >= NOW() - INTERVAL '1 year'";
+      break;
+    case "5y":
+      intervalCondition = "AND timestamp >= NOW() - INTERVAL '5 years'";
+      break;
+    case "all":
+      intervalCondition = ""; // no filter
+      break;
+    default:
+      return res.status(400).json({ error: "Invalid interval" });
+  }
+
+  try {
+    const result = await db.query(
+      `
+      SELECT timestamp::date AS date, close_price AS close
+      FROM (
+        SELECT * FROM dailystock WHERE symbol = $1
+        UNION ALL
+        SELECT * FROM historical_stock WHERE symbol = $1
+      ) AS combined
+      WHERE 1=1 ${intervalCondition}
+      ORDER BY timestamp ASC
+    `,
+      [symbol]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching stock history:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 
 // Fetch latest price for a symbol
 router.get('/:symbol', async (req, res) => {
@@ -107,6 +161,5 @@ router.post("/add-data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 module.exports = router;

@@ -17,4 +17,32 @@ body {
     padding: 10px;
     border-radius: 10px;
   }
+
+  .interval-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .interval-buttons button {
+    padding: 10px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+  }
+
+  .interval-buttons button:hover {
+    background-color: #0056b3;
+  }
+
+  canvas {
+    display: block;
+    margin: 0 auto;
+  }
   

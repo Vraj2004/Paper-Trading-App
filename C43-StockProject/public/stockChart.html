@@ -1,131 +1,196 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
     <title>Stock Chart</title>
     <link rel="stylesheet" href="/stylesheets/stockChart.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-    <!-- Needed for time scaling -->
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        padding: 40px;
+        text-align: center;
+      }
+
+      .interval-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .interval-buttons button {
+        padding: 10px 16px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+
+      .interval-buttons button.active {
+        background-color: #0056b3;
+        transform: scale(1.05);
+      }
+
+      canvas {
+        display: block;
+        margin: 30px auto;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+      }
+
+      h3 {
+        margin-top: 50px;
+      }
+    </style>
   </head>
 
   <body>
-    <h2 id="title">Stock: ...</h2>
+    <h2 id="chartTitle">📈 Loading Chart...</h2>
 
-    <div class="chart-section">
-      <h3>Past & Current Performance (10 Years)</h3>
-      <canvas id="historicalChart" width="300" height="100"></canvas>
+    <div class="interval-buttons">
+      <button data-interval="1d">1 Day</button>
+      <button data-interval="1w">1 Week</button>
+      <button data-interval="1m" class="active">1 Month</button>
+      <button data-interval="1y">1 Year</button>
+      <button data-interval="5y">5 Years</button>
+      <button data-interval="all">All Time</button>
     </div>
 
-    <div class="chart-section">
-      <h3>Future Price Prediction (1 Week)</h3>
-      <canvas id="predictionChart" width="300" height="80"></canvas>
-    </div>
+    <!-- Historical Chart -->
+    <canvas id="stockChart" width="800" height="400"></canvas>
+
+    <!-- Prediction Chart -->
+    <h3>📈 Prediction for the Next Week</h3>
+    <canvas id="predictionChart" width="800" height="400"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      const urlParams = new URLSearchParams(window.location.search);
-      const symbol = urlParams.get("symbol");
+      const symbol = localStorage.getItem("selectedStock");
+      const chartTitle = document.getElementById("chartTitle");
+      let chart, predictionChart;
 
-      if (!symbol) {
-        alert("No stock symbol provided.");
-        throw new Error("Missing stock symbol in URL query.");
-      }
+      async function loadChart(interval) {
+        chartTitle.textContent = `${symbol} Stock Chart (${interval.toUpperCase()})`;
 
-      document.getElementById("title").innerText = `Stock: ${symbol}`;
+        // Highlight active interval button
+        document.querySelectorAll(".interval-buttons button").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.dataset.interval === interval) btn.classList.add("active");
+        });
 
-      async function fetchHistoricalData() {
+        let labels = [];
+        let prices = [];
+
         try {
-          const res = await fetch(`/stocks/chart-data?symbol=${symbol}`);
-          return await res.json();
+          const res = await fetch(
+            `/stocks/history?symbol=${symbol}&interval=${interval}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              labels = data.map((point) => point.date);
+              prices = data.map((point) => point.close);
+            }
+          } else {
+            console.warn("No data for this interval.");
+          }
         } catch (err) {
-          console.error("Failed to fetch historical data:", err);
-          return [];
+          console.error("Failed to fetch data:", err);
         }
-      }
 
-      async function drawCharts() {
-        const data = await fetchHistoricalData();
-        console.log("Data", symbol, data);
-
-        if (data.length > 0) {
-          const labels = data.map((d) => new Date(d.timestamp));
-          const prices = data.map((d) => d.close_price);
-
-          new Chart(document.getElementById("historicalChart"), {
-            type: "line",
-            data: {
-              labels,
-              datasets: [
-                {
-                  label: "Close Price",
-                  data: prices,
-                  borderColor: "rgba(75, 192, 192, 1)",
-                  backgroundColor: "rgba(75, 192, 192, 0.1)",
-                  tension: 0.3,
-                  fill: true,
-                },
-              ],
+        // --- Historical Chart ---
+        if (chart) chart.destroy();
+        const ctx = document.getElementById("stockChart").getContext("2d");
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: `${symbol} Closing Price`,
+                data: prices,
+                borderColor: "#007bff",
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
             },
-            options: {
-              responsive: true,
-              scales: {
-                x: {
-                  type: "time",
-                  time: {
-                    unit: "year", // key change: year-based ticks
-                    tooltipFormat: "yyyy-MM-dd",
-                    displayFormats: {
-                      year: "yyyy",
-                    },
-                  },
-                  title: {
-                    display: true,
-                    text: "Year",
-                  },
-                  ticks: {
-                    maxTicksLimit: 10,
-                  },
-                },
-                y: {
-                  title: {
-                    display: true,
-                    text: "Close Price",
-                  },
-                },
+            scales: {
+              x: { title: { display: true, text: "Date" } },
+              y: {
+                title: { display: true, text: "Price (USD)" },
+                beginAtZero: false,
               },
             },
-          });
+          },
+        });
 
-          const predictionDays = 7;
-          const movingAvgDays = 10;
-          const recentPrices = prices.slice(-movingAvgDays);
-          const avg =
-            recentPrices.reduce((sum, p) => sum + parseFloat(p), 0) /
-            movingAvgDays;
+        // --- Prediction Chart ---
+        if (predictionChart) predictionChart.destroy();
+        const ctx2 = document
+          .getElementById("predictionChart")
+          .getContext("2d");
 
-          const predictionData = Array(predictionDays).fill(avg);
-          const predictionLabels = Array(predictionDays)
-            .fill(0)
-            .map((_, i) => `Day ${i + 1}`);
+        const lastPrice = prices.length > 0 ? prices[prices.length - 1] : 100; // fallback if no data
+        const prediction = [];
+        const futureLabels = [];
 
-          new Chart(document.getElementById("predictionChart"), {
-            type: "line",
-            data: {
-              labels: predictionLabels,
-              datasets: [
-                {
-                  label: "Predicted Close Price",
-                  data: predictionData,
-                  borderColor: "rgba(255, 99, 132, 1)",
-                  backgroundColor: "rgba(255, 99, 132, 0.2)",
-                  tension: 0.3,
-                  fill: true,
-                },
-              ],
-            },
-          });
+        for (let i = 1; i <= 7; i++) {
+          const projected = lastPrice * (1 + 0.003 * i);
+          prediction.push(projected.toFixed(2));
+          futureLabels.push(`Day +${i}`);
         }
+
+        predictionChart = new Chart(ctx2, {
+          type: "line",
+          data: {
+            labels: futureLabels,
+            datasets: [
+              {
+                label: "Predicted Closing Price",
+                data: prediction,
+                borderColor: "#28a745",
+                borderDash: [6, 6],
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.1,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: { title: { display: true, text: "Future Days" } },
+              y: {
+                title: { display: true, text: "Price (USD)" },
+                beginAtZero: false,
+              },
+            },
+          },
+        });
       }
-      drawCharts();
+
+      document.querySelectorAll(".interval-buttons button").forEach((btn) => {
+        btn.addEventListener("click", () => loadChart(btn.dataset.interval));
+      });
+
+      loadChart("all");
     </script>
   </body>
 </html>
