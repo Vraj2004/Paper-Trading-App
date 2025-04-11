@@ -14,9 +14,7 @@
         <p id="cashAmount" class="cash">Loading...</p>
 
         <h3>💼 Stock Holdings</h3>
-        <ul id="stockList">
-          <li>Loading...</li>
-        </ul>
+        <div id="stockList" class="stock-container">Loading...</div>
 
         <div class="button-group">
           <button onclick="handleDeposit()">💰 Deposit</button>
@@ -32,7 +30,6 @@
         try {
           const res = await fetch("/portfolio/my");
           const data = await res.json();
-
           const selected = data.find((p) => p.portfolioid == portfolioID);
           if (selected) {
             document.getElementById("cashAmount").innerText =
@@ -52,70 +49,88 @@
             `/portfolio/holdings?portfolioID=${portfolioID}`
           );
           const data = await res.json();
-          const ul = document.getElementById("stockList");
-          ul.innerHTML = "";
+          const container = document.getElementById("stockList");
+          container.innerHTML = "";
 
           let totalStockValue = 0;
 
           if (data.length === 0) {
-            ul.innerHTML = "<li>No stock holdings</li>";
+            container.innerHTML = "<p>No stock holdings</p>";
             return;
           }
 
           data.forEach((row) => {
-            const li = document.createElement("li");
-
             const currValue = Number(row.curr_value);
             const totalValue = Number(row.total_value);
 
+            const card = document.createElement("div");
+            card.className = "stock-card";
+
             if (isNaN(currValue) || isNaN(totalValue)) {
-              console.warn(
-                `Missing or invalid price data for ${row.symbol}`,
-                row
-              );
-              li.textContent = `${row.symbol}: ${row.volume} shares × ❌ Price Missing`;
-              ul.appendChild(li);
+              card.innerHTML = `
+                <h3>${row.symbol}</h3>
+                <p>${row.volume} shares × ❌ Price Missing</p>
+              `;
+              container.appendChild(card);
               return;
             }
 
-            li.textContent = `${row.symbol}: ${
-              row.volume
-            } shares × $${currValue.toFixed(2)} = $${totalValue.toFixed(2)}`;
-            ul.appendChild(li);
+            card.innerHTML = `
+              <h3>${row.symbol}</h3>
+              <p>${row.volume} shares × $${currValue.toFixed(
+              2
+            )} = $${totalValue.toFixed(2)}</p>
+              <button class="view-btn" onclick="viewStock('${
+                row.symbol
+              }')">View</button>
+              <button class="chart-btn" onclick="viewChart('${
+                row.symbol
+              }')">Chart</button>
+            `;
+            container.appendChild(card);
             totalStockValue += totalValue;
           });
 
-          const portfolioValueEl = document.createElement("li");
-          portfolioValueEl.innerHTML = `<strong>📈 Total Stock Value:</strong> $${totalStockValue.toFixed(
-            2
-          )}`;
-          ul.appendChild(portfolioValueEl);
-
+          // Totals
+          const totalsDiv = document.createElement("div");
+          totalsDiv.className = "totals-summary";
           const cashText = document.getElementById("cashAmount").innerText;
           const cashAmount = parseFloat(cashText.replace(/[^0-9.]/g, ""));
-          const totalValueEl = document.createElement("li");
-          totalValueEl.innerHTML = `<strong>💰 Total Portfolio Value:</strong> $${(
-            cashAmount + totalStockValue
-          ).toFixed(2)}`;
-          ul.appendChild(totalValueEl);
+          const totalValue = (cashAmount + totalStockValue).toFixed(2);
+
+          totalsDiv.innerHTML = `
+            <p><strong>📈 Total Stock Value:</strong> $${totalStockValue.toFixed(
+              2
+            )}</p>
+            <p><strong>💰 Total Portfolio Value:</strong> $${totalValue}</p>
+          `;
+          container.appendChild(totalsDiv);
         } catch (err) {
           console.error("Failed to load holdings:", err);
           document.getElementById("stockList").innerHTML =
-            "<li>Error loading holdings</li>";
+            "<p>Error loading holdings</p>";
         }
+      }
+
+      function viewStock(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = "/stock.html";
+      }
+
+      function viewChart(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = `/stockChart.html?symbol=${symbol}`;
       }
 
       async function handleDeposit() {
         const amount = prompt("Enter deposit amount:");
         if (!amount || isNaN(amount) || Number(amount) <= 0)
           return alert("Invalid amount");
-
         const res = await fetch("/portfolio/deposit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portfolioID, amount }),
         });
-
         if (res.ok) {
           alert("Deposit successful!");
           await fetchPortfolio();
@@ -129,13 +144,11 @@
         const amount = prompt("Enter amount to withdraw:");
         if (!amount || isNaN(amount) || Number(amount) <= 0)
           return alert("Invalid amount");
-
         const res = await fetch("/portfolio/withdraw", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ portfolioID, amount }),
         });
-
         const data = await res.json();
         if (res.ok) {
           alert("Withdrawal successful!");
