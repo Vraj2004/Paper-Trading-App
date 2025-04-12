@@ -5,30 +5,35 @@
     <link rel="stylesheet" href="/stylesheets/home.css" />
     <script src="/javascripts/navigationbar.js" defer></script>
   </head>
-
   <body>
-    <h1>Welcome to Your Dashboard</h1>
+    <div class="dashboard-container">
+      <h1>Welcome to Your Dashboard</h1>
 
-    <nav>
-      <div>
-        <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
-        <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
-        <a id="friends" href="/friends.html">Go to Friends</a>
-        <a id="home" href="/home.html">Go to Home</a>
+      <nav>
+        <div>
+          <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+          <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+          <a id="friends" href="/friends.html">Go to Friends</a>
+          <a id="home" href="/home.html">Go to Home</a>
+        </div>
+
+        <div>
+          <button id="logout">Logout</button>
+        </div>
+      </nav>
+      <div class="top-controls">
+        <button id="addPortfolioBtn">Add Portfolio</button>
       </div>
 
-      <div>
-        <button id="logout">Logout</button>
+      <h3>Your Portfolios:</h3>
+      <div id="portfolioList" class="portfolio-list">
+        <p>Loading portfolios...</p>
       </div>
-    </nav>
-
-    <h3>Your Portfolios:</h3>
-    <div>
-      <button id="addPortfolioBtn">Add Portfolio</button>
-      <button id="addStockData">Add Stock Data</button>
     </div>
-    <div id="portfolioList">
-      <p>Loading portfolios...</p>
+
+    <div class="bottom-controls">
+      <button id="stocklists">📋Go to Stocklists</button>
+      <button id="addStockData">ℹ️ Add Stock Data</button>
     </div>
 
     <script>
@@ -36,7 +41,6 @@
         try {
           const res = await fetch("/portfolio/my");
           const data = await res.json();
-
           const portfolioList = document.getElementById("portfolioList");
           portfolioList.innerHTML = "";
 
@@ -45,14 +49,16 @@
               const div = document.createElement("div");
               div.className = "portfolio-box";
               div.innerHTML = `
-              <strong>Portfolio ID:</strong> ${p.portfolioid} <br>
-              <strong>Cash Amount:</strong> $${Number(p.cashamount).toFixed(2)}
-            `;
-              div.style.cursor = "pointer";
-              div.addEventListener("click", () => {
-                localStorage.setItem("selectedPortfolioID", p.portfolioid);
-                window.location.href = "/portfolio.html";
-              });
+                <div>
+                  <strong>Portfolio ID:</strong> ${p.portfolioid}<br />
+                  <strong>Cash Amount:</strong> $${Number(p.cashamount).toFixed(
+                    2
+                  )}
+                </div>
+                <button class="manage-btn" onclick="goToPortfolio(${
+                  p.portfolioid
+                })">Manage</button>
+              `;
               portfolioList.appendChild(div);
             });
           } else {
@@ -66,6 +72,11 @@
         }
       }
 
+      function goToPortfolio(portfolioID) {
+        localStorage.setItem("selectedPortfolioID", portfolioID);
+        window.location.href = "/portfolio.html";
+      }
+
       window.onload = loadPortfolios;
 
       document
@@ -74,17 +85,13 @@
           const initialCash = prompt(
             "Enter initial cash amount for new portfolio:"
           );
-          if (!initialCash || isNaN(initialCash) || Number(initialCash) < 0) {
-            alert("Invalid amount.");
-            return;
-          }
+          if (!initialCash || isNaN(initialCash) || Number(initialCash) < 0)
+            return alert("Invalid amount.");
 
           try {
             const res = await fetch("/portfolio/create", {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ initialCash }),
             });
 
@@ -101,12 +108,12 @@
           }
         });
 
-      document.getElementById("stocks").addEventListener("click", () => {
-        window.location.href = "/stocksHome.html";
+      document.getElementById("stocklists").addEventListener("click", () => {
+        window.location.href = "/stocklistHome.html";
       });
 
       document.getElementById("addStockData").addEventListener("click", () => {
-        window.location.href = "/stocklistHome.html";
+        window.location.href = "/addData.html";
       });
     </script>
   </body>

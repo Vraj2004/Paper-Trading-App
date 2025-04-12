@@ -21,9 +21,11 @@
     <script>
       async function loadStockDetails() {
         const symbol = localStorage.getItem("selectedStock");
+        console.log("Selected stock:", symbol);
+        const portfolioID = localStorage.getItem("selectedPortfolioID");
 
-        if (!symbol) {
-          document.body.innerHTML = "No stock selected.";
+        if (!symbol || !portfolioID) {
+          document.body.innerHTML = "No stock or portfolio selected.";
           return;
         }
 
@@ -31,21 +33,75 @@
           const res = await fetch(`/stocks/${symbol}`);
           const data = await res.json();
 
-          if (!res.ok) {
-            throw new Error(data.error || "Failed to fetch stock");
-          }
-
           document.getElementById("stockTitle").innerText = `Stock: ${symbol}`;
           document.getElementById(
             "stockPrice"
           ).innerText = `Current Price: $${Number(data.latestprice).toFixed(
             2
           )}`;
+
+          // Load shares owned
+          const hres = await fetch(
+            `/portfolio/holdings?portfolioID=${portfolioID}`
+          );
+          const hdata = await hres.json();
+          const holding = hdata.find((h) => h.symbol === symbol);
+          document.getElementById("stockOwned").innerText = `Shares Owned: ${
+            holding ? holding.volume : 0
+          }`;
         } catch (err) {
           console.error(err);
           document.body.innerHTML = "Failed to load stock.";
         }
       }
+
+      async function handleBuy() {
+        const symbol = localStorage.getItem("selectedStock");
+        const portfolioID = localStorage.getItem("selectedPortfolioID");
+        const shares = prompt("Enter number of shares to buy:");
+        if (!shares || isNaN(shares) || shares <= 0)
+          return alert("Invalid input");
+
+        const res = await fetch("/portfolio/buy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portfolioID, symbol, shares }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Buy successful!");
+          loadStockDetails();
+        } else {
+          alert("Error: " + data.error);
+        }
+      }
+
+      async function handleSell() {
+        const symbol = localStorage.getItem("selectedStock");
+        const portfolioID = localStorage.getItem("selectedPortfolioID");
+        const shares = prompt("Enter number of shares to sell:");
+        if (!shares || isNaN(shares) || shares <= 0)
+          return alert("Invalid input");
+
+        const res = await fetch("/portfolio/sell", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ portfolioID, symbol, shares }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Sell successful!");
+          loadStockDetails();
+        } else {
+          alert("Error: " + data.error);
+        }
+      }
+
+      document.getElementById("buyBtn").onclick = handleBuy;
+      document.getElementById("sellBtn").onclick = handleSell;
+
       loadStockDetails();
     </script>
   </body>

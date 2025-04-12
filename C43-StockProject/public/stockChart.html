@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Stock Chart</title>
+    <link rel="stylesheet" href="/stylesheets/stockChart.css" />
+  </head>
+
+  <body>
+    <h2 id="chartTitle">📈 Loading Chart...</h2>
+
+    <div class="interval-buttons">
+      <button data-interval="1w">1 Week</button>
+      <button data-interval="1m" class="active">1 Month</button>
+      <button data-interval="1y">1 Year</button>
+      <button data-interval="5y">5 Years</button>
+      <button data-interval="all">All Time</button>
+    </div>
+
+    <!-- Historical Chart -->
+    <canvas id="stockChart" width="800" height="400"></canvas>
+
+    <!-- Prediction Chart -->
+    <h3>📈 Prediction for the Next Week</h3>
+    <canvas id="predictionChart" width="800" height="400"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const symbol = localStorage.getItem("selectedStock");
+      const chartTitle = document.getElementById("chartTitle");
+      let chart, predictionChart;
+
+      function formatLabel(dateStr, interval) {
+        const date = new Date(dateStr);
+        switch (interval) {
+          case "1w":
+            return date.toLocaleDateString("en-US", { weekday: "short" }); // Mon, Tue
+          case "1m":
+            return `W${Math.ceil(date.getDate() / 7)}`; // W1, W2
+          case "1y":
+            return date.toLocaleDateString("en-US", { month: "short" }); // Jan, Feb
+          case "5y":
+          case "all":
+            return date.getFullYear(); // 2020, 2021
+          default:
+            return date.toLocaleDateString();
+        }
+      }
+
+      async function loadChart(interval) {
+        chartTitle.textContent = `${symbol} Stock Chart (${interval.toUpperCase()})`;
+
+        document.querySelectorAll(".interval-buttons button").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.dataset.interval === interval) btn.classList.add("active");
+        });
+
+        let rawLabels = [];
+        let prices = [];
+
+        try {
+          const res = await fetch(
+            `/stocks/history?symbol=${symbol}&interval=${interval}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              rawLabels = data.map((point) => point.date);
+              prices = data.map((point) => point.close);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to fetch data:", err);
+        }
+
+        const labels = rawLabels.map((d) => formatLabel(d, interval));
+
+        // --- Historical Chart ---
+        if (chart) chart.destroy();
+        const ctx = document.getElementById("stockChart").getContext("2d");
+        chart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: `${symbol} Closing Price`,
+                data: prices,
+                borderColor: "#007bff",
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: {
+                title: { display: true, text: "Date" },
+                ticks: {
+                  autoSkip: true,
+                  maxTicksLimit:
+                    interval === "all" || interval === "5y" ? 5 : 10,
+                },
+              },
+              y: {
+                title: { display: true, text: "Price" },
+                beginAtZero: false,
+              },
+            },
+          },
+        });
+
+        // --- Prediction Chart ---
+        if (predictionChart) predictionChart.destroy();
+        const ctx2 = document
+          .getElementById("predictionChart")
+          .getContext("2d");
+
+        const last30 = prices.slice(-30).map(Number);
+        const futureLabels = [];
+        const prediction = [];
+
+        if (last30.length > 0) {
+          // 1. Moving Average
+          const avg30 = last30.reduce((a, b) => a + b, 0) / last30.length;
+
+          // 2. Simple Slope from Last 7 days
+          const recent7 = last30.slice(-7);
+          const slope =
+            recent7.length > 1
+              ? (recent7[recent7.length - 1] - recent7[0]) /
+                (recent7.length - 1)
+              : 0;
+
+          // 3. Generate prediction with fluctuation and slope
+          for (let i = 1; i <= 7; i++) {
+            const noise = (Math.random() - 0.5) * 0.5; // Small up/down variation
+            const projected = avg30 + slope * i + noise;
+            prediction.push(projected.toFixed(2));
+            futureLabels.push(`Day +${i}`);
+          }
+        }
+
+        predictionChart = new Chart(ctx2, {
+          type: "line",
+          data: {
+            labels: futureLabels,
+            datasets: [
+              {
+                label: "Predicted Closing Price",
+                data: prediction,
+                borderColor: "#28a745",
+                borderWidth: 2,
+                pointRadius: 3,
+                tension: 0.1,
+                fill: false,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+            },
+            scales: {
+              x: { title: { display: true, text: "Future Days" } },
+              y: {
+                title: { display: true, text: "Price" },
+                beginAtZero: false,
+              },
+            },
+          },
+        });
+
+        document.querySelectorAll(".interval-buttons button").forEach((btn) => {
+          btn.addEventListener("click", () => loadChart(btn.dataset.interval));
+        });
+      }
+
+      loadChart("all");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="stylesheets/addData.css" />
+    <title>Add Custom Stock Data</title>
+  </head>
+  <body>
+    <div class="form-container">
+      <h2>Add Daily Stock Data</h2>
+      <form id="stockDataForm">
+        <label>Symbol: <input type="text" name="symbol" required /></label
+        ><br />
+        <label>Date: <input type="date" name="timestamp" required /></label
+        ><br />
+        <label
+          >Open Price:
+          <input type="number" step="0.01" name="open_price" required /></label
+        ><br />
+        <label
+          >High Price:
+          <input type="number" step="0.01" name="high_price" required /></label
+        ><br />
+        <label
+          >Low Price:
+          <input type="number" step="0.01" name="low_price" required /></label
+        ><br />
+        <label
+          >Close Price:
+          <input type="number" step="0.01" name="close_price" required /></label
+        ><br />
+        <label>Volume: <input type="number" name="volume" required /></label
+        ><br />
+        <button type="submit">Add Entry</button>
+      </form>
+
+      <p id="message"></p>
+    </div>
+
+    <script>
+      const form = document.getElementById("stockDataForm");
+      const msg = document.getElementById("message");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(form);
+        const body = Object.fromEntries(formData.entries());
+
+        try {
+          const res = await fetch("/stocks/add-data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+          const data = await res.json();
+          if (res.ok) {
+            msg.textContent = "Stock data added successfully!";
+            form.reset();
+          } else {
+            msg.textContent = "Error: " + data.error;
+          }
+        } catch (err) {
+          msg.textContent = "Something went wrong.";
+          console.error(err);
+        }
+      });
+    </script>
+  </body>
+</html>

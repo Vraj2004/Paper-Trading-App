@@ -6,15 +6,21 @@
   </head>
 
   <body>
-    <div class="portfolio-info">
-      <h2>Portfolio Overview</h2>
-      <p id="cashAmount">Loading...</p>
-      <h3>Stock Holdings (Coming Soon)</h3>
-      <ul id="stockList">
-        <li>None</li>
-      </ul>
-      <button onclick="handleDeposit()">Deposit</button>
-      <button onclick="handleWithdraw()">Withdraw</button>
+    <div class="container">
+      <button id="stocks">Go to Stocks</button>
+
+      <div class="portfolio-card">
+        <h2>📊 Portfolio Overview</h2>
+        <p id="cashAmount" class="cash">Loading...</p>
+
+        <h3>Stock Holdings</h3>
+        <div id="stockList" class="stock-container">Loading...</div>
+
+        <div class="button-group">
+          <button onclick="handleDeposit()">💰 Deposit</button>
+          <button onclick="handleWithdraw()">💸 Withdraw</button>
+        </div>
+      </div>
     </div>
 
     <script>
@@ -24,7 +30,6 @@
         try {
           const res = await fetch("/portfolio/my");
           const data = await res.json();
-
           const selected = data.find((p) => p.portfolioid == portfolioID);
           if (selected) {
             document.getElementById("cashAmount").innerText =
@@ -38,6 +43,85 @@
         }
       }
 
+      async function loadHoldings() {
+        try {
+          const res = await fetch(
+            `/portfolio/holdings?portfolioID=${portfolioID}`
+          );
+          const data = await res.json();
+          const container = document.getElementById("stockList");
+          container.innerHTML = "";
+
+          let totalStockValue = 0;
+
+          if (data.length === 0) {
+            container.innerHTML = "<p>No stock holdings</p>";
+            return;
+          }
+
+          data.forEach((row) => {
+            const currValue = Number(row.curr_value);
+            const totalValue = Number(row.total_value);
+
+            const card = document.createElement("div");
+            card.className = "stock-card";
+
+            if (isNaN(currValue) || isNaN(totalValue)) {
+              card.innerHTML = `
+                <h3>${row.symbol}</h3>
+                <p>${row.volume} shares × Price Missing</p>
+              `;
+              container.appendChild(card);
+              return;
+            }
+
+            card.innerHTML = `
+              <h3>${row.symbol}</h3>
+              <p>${row.volume} shares × $${currValue.toFixed(
+              2
+            )} = $${totalValue.toFixed(2)}</p>
+              <button class="view-btn" onclick="viewStock('${
+                row.symbol
+              }')">View</button>
+              <button class="chart-btn" onclick="viewChart('${
+                row.symbol
+              }')">Chart</button>
+            `;
+            container.appendChild(card);
+            totalStockValue += totalValue;
+          });
+
+          // Totals
+          const totalsDiv = document.createElement("div");
+          totalsDiv.className = "totals-summary";
+          const cashText = document.getElementById("cashAmount").innerText;
+          const cashAmount = parseFloat(cashText.replace(/[^0-9.]/g, ""));
+          const totalValue = (cashAmount + totalStockValue).toFixed(2);
+
+          totalsDiv.innerHTML = `
+            <p><strong>📈 Total Stock Value:</strong> $${totalStockValue.toFixed(
+              2
+            )}</p>
+            <p><strong>💰 Total Portfolio Value:</strong> $${totalValue}</p>
+          `;
+          container.appendChild(totalsDiv);
+        } catch (err) {
+          console.error("Failed to load holdings:", err);
+          document.getElementById("stockList").innerHTML =
+            "<p>Error loading holdings</p>";
+        }
+      }
+
+      function viewStock(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = "/stock.html";
+      }
+
+      function viewChart(symbol) {
+        localStorage.setItem("selectedStock", symbol);
+        window.location.href = `/stockChart.html?symbol=${symbol}`;
+      }
+
       async function handleDeposit() {
         const amount = prompt("Enter deposit amount:");
         if (!amount || isNaN(amount) || Number(amount) <= 0)
@@ -49,7 +133,8 @@
         });
         if (res.ok) {
           alert("Deposit successful!");
-          fetchPortfolio();
+          await fetchPortfolio();
+          await loadHoldings();
         } else {
           alert("Deposit failed.");
         }
@@ -67,13 +152,18 @@
         const data = await res.json();
         if (res.ok) {
           alert("Withdrawal successful!");
-          fetchPortfolio();
+          await fetchPortfolio();
+          await loadHoldings();
         } else {
           alert("Error: " + data.error);
         }
       }
 
-      fetchPortfolio();
+      fetchPortfolio().then(loadHoldings);
+
+      document.getElementById("stocks").addEventListener("click", () => {
+        window.location.href = "/stocksHome.html";
+      });
     </script>
   </body>
 </html>
