@@ -5,6 +5,7 @@
 
 -- Here we copy all the data to our stock table
 COPY stock(symbol, curr_value)
+-- change the path to your own path
 FROM '/home/postgres/stock_symbols.csv'
 DELIMITER ',' CSV HEADER;
 

@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friends</title>
+    <script src="/javascripts/navigationbar.js" defer></script>
+    <link rel="stylesheet" href="/stylesheets/friends.css" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <script id="load-script">
+    function acceptRejectButtons(button, senderid) {
+      if (!senderid) {
+        console.error("Sender ID is undefined or null");
+        return;
+      }
+      button.addEventListener("click", async (e) => {
+        const action = e.target.dataset.action;
+        try {
+          const response = await fetch(`/friends/reqs/${action}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              senderID: senderid,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || "Failed to process request");
+          }
+          alert(`Request ${action}ed successfully!`);
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+          console.error("Error processing request:", error);
+        }
+      });
+    }
+    document.addEventListener("DOMContentLoaded", async () => {
+      const userID = localStorage.getItem("userID");
+      //GET FRIENDS
+      try {
+        const response = await fetch(`/friends/${userID}`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error);
+        }
+        const friends = await response.json();
+        const friendList = document.querySelector(".friend-list");
+        friendList.innerHTML = ""; // Clear existing list
+        if (friends.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No friends found.";
+          friendList.appendChild(li);
+        } else {
+          friends.forEach((friend) => {
+            console.log(friend);
+            const li = document.createElement("li");
+            li.textContent = friend.friendid + ": username: " + friend.username;
+            const deleteFriendButton = document.createElement("button");
+            deleteFriendButton.id = "delete_" + friend.friendid;
+            deleteFriendButton.textContent = "❌";
+            deleteFriendButton.setAttribute("data-action", "reject");
+            acceptRejectButtons(deleteFriendButton, friend.friendid);
+            li.appendChild(deleteFriendButton);
+            friendList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+      //GET SENT FRIEND REQUESTS
+      try {
+        const response = await fetch(`friends/reqs/sent/${userID}`);
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to fetch sent friend requests");
+        }
+        const sentRequests = await response.json();
+        console.log(sentRequests);
+        const sentList = document.querySelector("#sent-requests");
+        sentList.innerHTML = ""; // Clear existing list
+        if (sentRequests.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No sent requests.";
+          sentList.appendChild(li);
+        } else {
+          sentRequests.forEach((request) => {
+            console.log(request);
+            const li = document.createElement("li");
+            li.textContent =
+              request.receiverid + ": username: " + request.username;
+            const statusSpan = document.createElement("p");
+            statusSpan.classList.add("status");
+            statusSpan.textContent = `Status: ${request.status}`;
+            li.appendChild(statusSpan);
+
+            sentList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching sent friend requests:", error);
+        console.error("Error fetching sent friend requests:", error);
+      }
+      //GET RECIEVED FRIEND REQUESTS
+      try {
+        const response = await fetch(`friends/reqs/recieved/${userID}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch sent friend requests");
+        }
+        const reqs = await response.json();
+        const recList = document.querySelector("#recieved-requests");
+        recList.innerHTML = ""; // Clear existing list
+        if (reqs.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No requests recieved.";
+          recList.appendChild(li);
+        } else {
+          reqs.forEach((request) => {
+            console.log(request.senderid);
+            const li = document.createElement("li");
+            li.textContent =
+              request.senderid + ": username: " + request.username;
+            const acceptButton = document.createElement("button");
+            acceptButton.id = "accept_" + request.senderid;
+            acceptButton.textContent = "✅";
+            acceptButton.setAttribute("data-action", "accept");
+            const rejectButton = document.createElement("button");
+            rejectButton.id = "reject_" + request.senderid;
+            rejectButton.textContent = "❌";
+            rejectButton.setAttribute("data-action", "reject");
+            acceptRejectButtons(acceptButton, request.senderid);
+            acceptRejectButtons(rejectButton, request.senderid);
+            li.appendChild(acceptButton);
+            li.appendChild(rejectButton);
+            recList.appendChild(li);
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching recieved friend requests:", error);
+      }
+    });
+  </script>
+  <script id="send-request-script">
+    document.addEventListener("DOMContentLoaded", () => {
+      const sendRequestForm = document.querySelector(".send-request");
+      sendRequestForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const recieverID = document.getElementById("recieverID").value;
+        const userID = localStorage.getItem("userID");
+        console.log("Friend ID:", recieverID);
+        try {
+          const response = await fetch("/friends/reqs/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ recieverID }),
+          });
+          if (!response.ok) {
+            error = await response.json();
+            alert(error.error);
+          } else alert("Friend request sent!");
+          sendRequestForm.reset();
+        } catch (error) {
+          console.error("Error sending friend request:", error);
+        }
+      });
+    });
+  </script>
+
+  <body>
+    <nav>
+      <div>
+        <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+        <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+        <a id="friends" href="/friends.html">Go to Friends</a>
+        <a id="home" href="/home.html">Go to Home</a>
+      </div>
+
+      <div>
+        <button id="logout">Logout</button>
+      </div>
+    </nav>
+    <h1>Friends</h1>
+
+    <div style="display: flex; gap: 20px">
+      <div class="section" style="flex: 1">
+        <h2>Your Friends</h2>
+        <ul class="friend-list"></ul>
+      </div>
+
+      <div class="section" style="flex: 1">
+        <h2>Friend Requests</h2>
+        <div>
+          <h3>Sent</h3>
+          <ul id="sent-requests" class="request-list"></ul>
+        </div>
+        <div>
+          <h3>Received</h3>
+          <ul id="recieved-requests" class="request-list"></ul>
+        </div>
+      </div>
+
+      <div class="section" style="flex: 1">
+        <h2>Send a Friend Request</h2>
+        <form class="send-request">
+          <label for="recieverID">Enter Friend ID:</label>
+          <input type="text" id="recieverID" name="recieverID" required />
+          <button type="submit">Send Request</button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

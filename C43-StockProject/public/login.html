@@ -26,6 +26,8 @@
 
           const username = document.getElementById("username").value;
           const password = document.getElementById("password").value;
+          console.log("Username:", username);
+          console.log("Password:", password);
 
           try {
             const res = await fetch("/users/login", {
@@ -38,6 +40,7 @@
             const data = await res.json(); // ✅ use `res`, not `response`
 
             if (res.ok) {
+              localStorage.setItem("userID", data.userID); // Store userID in localStorage
               window.location.href = "/home.html";
             } else {
               document.getElementById("message").innerText = `❌ ${

@@ -9,20 +9,26 @@ var logger = require('morgan');
 var session = require('express-session');
 
 //var indexRouter = require('./routes/index');
+//var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var friendsRouter = require('./routes/friends');
 var portfolioRouter = require('./routes/portfolio');
 var stockRouter = require('./routes/stocks');
+var stocklistRouter = require('./routes/stocklist');
+var reviewsRouter = require('./routes/reviews');
 
 var app = express();
 
+
+
 app.use(
   session({
-    secret: 'testing_key', 
+    secret: 'testing_key', // use a strong secret in production
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, 
-      maxAge: 1000 * 60 * 60 * 24 
+      secure: false, // set to true if using HTTPS
+      maxAge: 1000 * 60 * 60 * 24 // 1 day
     }
   })
 );
@@ -47,12 +53,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/users', usersRouter);
 app.use('/portfolio', portfolioRouter);
 app.use('/stocks', stockRouter);
+app.use('/friends', friendsRouter);
+app.use('/stocklist', stocklistRouter);
+app.use('/reviews', reviewsRouter);
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 

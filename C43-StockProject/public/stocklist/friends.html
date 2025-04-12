@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friends</title>
+    <script src="/javascripts/friendLoadScript.js"></script>
+    <script src="/javascripts/navigationbar.js" defer></script>
+    <link rel="stylesheet" href="/stylesheets/friends.css" />
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+  </head>
+  <body>
+    <script>
+      let params = new URLSearchParams(window.location.search);
+      let stocklistID = params.get("stocklistID");
+      const userID = localStorage.getItem("userID");
+
+      async function share(friendID) {
+        try {
+          const response = await fetch(`/stocklist/${stocklistID}/share`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ friendID }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || "Failed to share stocklist");
+          }
+          alert("Stocklist shared successfully!");
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+          console.error("Error sharing stocklist:", error);
+        }
+      }
+
+      async function addFriendList(friends) {
+        console.log("Adding friends to the list");
+        console.log(friends);
+        // Accept friends as a parameter
+        const friendList = document.querySelector(".friend-list");
+        friendList.innerHTML = ""; // Clear existing list
+        if (friends.length === 0) {
+          const li = document.createElement("li");
+          li.textContent = "No friends found.";
+          friendList.appendChild(li);
+        } else {
+          friendList.innerHTML = friends
+            .map(
+              (friend) =>
+                `<li>
+                  <p>${friend.friendid}: username: ${friend.username}</p>
+                  <button id="select_${friend.friendid}" onclick="share('${friend.friendid}')">Select</button>
+                </li>`
+            )
+            .join("");
+        }
+      }
+      (async function () {
+        const friends = await loadFriends(); // Assign the result of loadFriends to friends
+        addFriendList(friends); // Pass friends to addFriendList
+      })();
+    </script>
+    <nav>
+      <div>
+        <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+        <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+        <a id="friends" href="/friends.html">Go to Friends</a>
+        <a id="home" href="/home.html">Go to Home</a>
+      </div>
+
+      <div>
+        <button id="logout">Logout</button>
+      </div>
+    </nav>
+    <h1>Friends</h1>
+    <div class="container">
+      <h2>Friends List</h2>
+      <ul class="friend-list"></ul>
+    </div>
+  </body>
+</html>

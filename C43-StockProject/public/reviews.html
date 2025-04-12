@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reviews</title>
+    <link rel="stylesheet" href="/stylesheets/reviews.css" />
+  </head>
+  <body>
+    <h1>Reviews</h1>
+    <div class="container">
+      <div id="stock-info">
+        <h2>Stock Information</h2>
+        <div id="stock-details"></div>
+      </div>
+      <div id="reviews-section">
+        <div id="reviews-container"></div>
+        <textarea
+          id="review-content"
+          placeholder="Write your review here"
+        ></textarea>
+        <button id="add-review-btn">Add Review</button>
+      </div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const stocklistID = params.get("stocklistID");
+      let stocklistOwnerID;
+      const userID = localStorage.getItem("userID");
+      async function loadStockInfo() {
+        try {
+          const response = await fetch(`stocklist/${stocklistID}`, {
+            method: "GET",
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch stock information");
+          }
+          const stockInfo = await response.json();
+          stocklistOwnerID = stockInfo.ownerID;
+          const stockDetails = document.getElementById("stock-details");
+          stockDetails.innerHTML = `
+                          <p><strong>Stocklist ID:</strong> ${
+                            stockInfo.stocklistID
+                          }</p>
+
+                          <ul>
+                              ${stockInfo.stocks
+                                .map((stock) => `<li>${stock.symbol}</li>`)
+                                .join("")}
+                          </ul>
+                      `;
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load stock information");
+        }
+      }
+      async function deleteReview(reviewID) {
+        try {
+          const response = await fetch(`/reviews/${stocklistID}/${reviewID}`, {
+            method: "DELETE",
+          });
+          if (!response.ok) {
+            throw new Error("Failed to delete review");
+          }
+          loadReviews(); // Reload reviews after deletion
+        } catch (error) {
+          console.error(error);
+          alert("Failed to delete review");
+        }
+      }
+      async function editReview(reviewID) {
+        console.log("Editing review with ID:", reviewID);
+        const newContent = prompt("Enter new review content:");
+        if (!newContent) {
+          alert("Review content cannot be empty");
+          return;
+        }
+        try {
+          const response = await fetch(`/reviews/${stocklistID}/${reviewID}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ content: newContent }),
+          });
+          if (!response.ok) {
+            throw new Error("Failed to edit review");
+          }
+          loadReviews(); // Reload reviews after editing
+        } catch (error) {
+          console.error(error);
+          alert("Failed to edit review");
+        }
+      }
+
+      async function loadReviews() {
+        try {
+          const response = await fetch(`/reviews/${stocklistID}`, {
+            method: "GET",
+          });
+          if (!response.ok) {
+            throw new Error("Failed to fetch reviews");
+          }
+          const reviews = await response.json();
+          const reviewsContainer = document.getElementById("reviews-container");
+          console.log(userID, stocklistOwnerID);
+          reviewsContainer.innerHTML = reviews
+            .map(
+              (review) =>
+                `<div class="review">
+                                      <p><strong>Reviewer ID:</strong> ${
+                                        review.reviewerid
+                                      } <strong> username: </strong> ${
+                  review.username
+                }</p>
+                                      <p>${review.content}</p>
+                  ${
+                    userID == stocklistOwnerID || userID == review.reviewerid
+                      ? `<button class="delete-review-btn" data-review-id="${review.reviewid}" onclick="deleteReview('${review.reviewid}')">Delete</button>`
+                      : ""
+                  }
+                      ${
+                        userID == review.reviewerid
+                          ? `<button class="edit-review-btn" data-review-id="${review.reviewid}" onclick="editReview('${review.reviewid}')">Edit</button>`
+                          : ""
+                      }
+                                  </div>`
+            )
+            .join("");
+        } catch (error) {
+          console.error(error);
+          alert("Failed to load reviews");
+        }
+      }
+
+      async function addReview() {
+        const content = document.getElementById("review-content").value;
+        if (!content) {
+          alert("Review content cannot be empty");
+          return;
+        }
+        try {
+          const response = await fetch(`/reviews/create/${stocklistID}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ content }),
+          });
+          if (!response.ok) {
+            throw new Error("Failed to add review");
+          }
+          document.getElementById("review-content").value = "";
+          loadReviews(); // Reload reviews after adding
+        } catch (error) {
+          console.error(error);
+          alert("Failed to add review");
+        }
+      }
+
+      document
+        .getElementById("add-review-btn")
+        .addEventListener("click", addReview);
+
+      // Load stock info and reviews on page load
+      (async function initializePage() {
+        await loadStockInfo();
+        loadReviews();
+      })();
+    </script>
+  </body>
+</html>
