@@ -92,7 +92,6 @@ button {
   align-items: center;
 }
 
-.manage-btn {
 #stocks {
   background-color: #28a745;
   color: white;
@@ -118,6 +117,8 @@ button {
 
 #stocklists {
   background-color: #6f42c1;
+}
+
 #stocklists {
   background-color: purple;
   color: white;
@@ -132,3 +133,7 @@ button {
   background-color: #e66e0f;
 }
 
+#home {
+  background-color: #007bff;
+  color: white;
+}
