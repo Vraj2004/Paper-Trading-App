@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
-const path = require('path'); 
+const path = require('path');
 
 router.get('/all', async (req, res) => {
   try {
@@ -115,6 +115,7 @@ router.get('/:symbol', async (req, res) => {
   }
 });
 
+
 router.post("/add-data", async (req, res) => {
   console.log("🛬 Received:", req.body);
 
@@ -157,5 +158,13 @@ router.post("/add-data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+
+
+
+
+
+
 
 module.exports = router;

@@ -198,4 +198,88 @@ router.get('/holdings', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch holdings' });
   }
 });
+
+router.get('/stats/betaCOV/:PortfolioID', async (req, res) => {
+  const portfolioID = req.params.PortfolioID;
+  const userID = req.session.userID;
+  if (!userID) {
+    return res.status(401).json({ error: 'Not logged in' });
+  }
+  if (!portfolioID) {
+    return res.status(400).json({ error: 'Missing portfolio ID' });
+  }
+
+  try {
+    const result = await db.query(
+      `SELECT symbol, beta, COV FROM 
+      stock WHERE symbol IN (
+        SELECT symbol FROM holding WHERE portfolioID = $1
+      )`,
+      [portfolioID]
+    )
+    return res.status(200).json(result.rows);
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch beta and COV' });
+  }
+
+
+});
+
+router.get('/stats/matrix/:PortfolioID', async (req, res) => {
+  const { type } = req.query;
+  if (type !== 'COVAR_POP' && type !== 'CORR') {
+    return res.status(400).json({ error: 'Invalid type' });
+  }
+  const portfolioID = req.params.PortfolioID;
+  const userID = req.session.userID;
+  if (!userID) {
+    return res.status(401).json({ error: 'Not logged in' });
+  }
+  if (!portfolioID) {
+    return res.status(400).json({ error: 'Missing portfolio ID' });
+  }
+
+  try {
+    const heldSymbols = await db.query(
+      `SELECT symbol FROM holding WHERE portfolioID = $1`,
+      [portfolioID]
+    );
+    if (heldSymbols.rows.length === 0) {
+      return res.status(201).json({ msg: 'No stocks held in this portfolio' });
+    }
+
+    const matrix = [];
+
+    for (let i = 0; i < heldSymbols.rows.length; i++) {
+      let row = [];
+      for (let j = 0; j < heldSymbols.rows.length; j++) {
+        const functionName = type; // Dynamically use the type (COVAR_POP or CORR)
+        const query = `
+          SELECT ${functionName}(h1.close_price, h2.close_price) AS covariance
+          FROM historical_stock h1
+          JOIN historical_stock h2
+          ON h1.timestamp = h2.timestamp
+          WHERE h1.symbol = $1 AND h2.symbol = $2
+        `;
+        const result = await db.query(query, [
+          heldSymbols.rows[i].symbol,
+          heldSymbols.rows[j].symbol,
+        ]);
+        if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Stock not found' });
+        }
+        row.push(result.rows[0]);
+      }
+      matrix.push(row);
+    }
+    console.log(matrix);
+    return res.status(200).json({ matrix, tblHeaders: heldSymbols.rows.map(row => row.symbol) });
+  }
+  catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch matrix' });
+  }
+});
 module.exports = router;

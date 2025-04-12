@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Portfolio Stats</title>
+    <link rel="stylesheet" href="/stylesheets/stats.css" />
+  </head>
+  <body>
+    <h1>Portfolio Statistics</h1>
+    <table style="border: 1px solid black; border-collapse: collapse">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Beta</th>
+          <th>COV</th>
+        </tr>
+      </thead>
+      <tbody id="statsTableBody">
+        <!-- Data will be dynamically inserted here -->
+      </tbody>
+    </table>
+    <h1>Portfolio Matrix</h1>
+    <h2>Correlation Matrix</h2>
+    <table style="border: 1px solid black; border-collapse: collapse">
+      <tbody id="CORR">
+        <!-- Data will be dynamically inserted here -->
+      </tbody>
+    </table>
+    <h2>Covariance Matrix</h2>
+    <table>
+      <tbody id="COVAR_POP">
+        <!-- Data will be dynamically inserted here -->
+      </tbody>
+    </table>
+
+    <script>
+      async function fetchPortfolioStats() {
+        const portfolioID = localStorage.getItem("selectedPortfolioID"); // Replace with actual portfolio ID
+        try {
+          const response = await fetch(
+            `portfolio/stats/betaCOV/${portfolioID}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch portfolio stats");
+          }
+          const data = await response.json();
+          const tableBody = document.getElementById("statsTableBody");
+          tableBody.innerHTML = ""; // Clear existing rows
+
+          data.forEach((row) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                        <td>${row.symbol}</td>
+                        <td>${row.beta}</td>
+                        <td>${row.cov}</td>
+                    `;
+            tableBody.appendChild(tr);
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      async function fetchPortfolioMatrix(type, containerID) {
+        const portfolioID = localStorage.getItem("selectedPortfolioID"); // Replace with actual portfolio ID
+        try {
+          const response = await fetch(
+            `/portfolio/stats/matrix/${portfolioID}?type=${type}`
+          );
+          if (!response.ok) {
+            throw new Error("Failed to fetch portfolio matrix");
+          }
+          const { matrix, tblHeaders } = await response.json(); // Destructure matrix and headers
+          console.log(matrix);
+
+          const tableBody = document.getElementById(containerID);
+          tableBody.innerHTML = ""; // Clear existing rows
+
+          // Create the first row with column headers
+          const headerRow = document.createElement("tr");
+          const emptyHeader = document.createElement("th"); // Empty top-left corner cell
+          headerRow.appendChild(emptyHeader);
+
+          tblHeaders.forEach((header) => {
+            const th = document.createElement("th");
+            th.textContent = header;
+            headerRow.appendChild(th);
+          });
+          tableBody.appendChild(headerRow);
+
+          // Create rows with row headers and matrix data
+          matrix.forEach((row, rowIndex) => {
+            const tr = document.createElement("tr");
+
+            // Add row header
+            const rowHeader = document.createElement("th");
+            rowHeader.textContent = tblHeaders[rowIndex];
+            tr.appendChild(rowHeader);
+
+            // Add matrix data
+            row.forEach((cell) => {
+              const td = document.createElement("td");
+              td.textContent = cell.covariance.toFixed(2); // Format covariance value
+              tr.appendChild(td);
+            });
+
+            tableBody.appendChild(tr);
+          });
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      // Fetch matrix on page load
+      fetchPortfolioMatrix("CORR", "CORR");
+      fetchPortfolioMatrix("COVAR_POP", "COVAR_POP");
+
+      // Fetch stats on page load
+      fetchPortfolioStats();
+    </script>
+  </body>
+</html>
