@@ -52,6 +52,7 @@ body {
 .cash {
   font-size: 18px;
   color: #333;
+  text-align: center;
 }
 
 ul#stockList {
@@ -97,20 +98,22 @@ ul#stockList li {
   background-color: #b02a37;
 }
 
-/* New styling for stock cards */
 .stock-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
   padding-top: 10px;
+  align-items: center;
 }
 
 .stock-card {
   background-color: #fefefe;
   padding: 18px 22px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
 }
 
 .stock-card h3 {
@@ -123,7 +126,7 @@ ul#stockList li {
 }
 
 .stock-card button {
-  margin-right: 12px;
+  margin: 6px;
   padding: 6px 14px;
   font-size: 14px;
   border: none;
@@ -132,25 +135,25 @@ ul#stockList li {
 }
 
 .view-btn {
-  background-color: #007bff;
+  background-color: #38a169;
   color: white;
 }
 
 .view-btn:hover {
-  background-color: #0056b3;
+  background-color: #38a169;
 }
 
 .chart-btn {
-  background-color: #6c757d;
+  background-color: #38a169;
   color: white;
 }
 
 .chart-btn:hover {
-  background-color: #565e64;
+  background-color: #38a169;
 }
 
 .totals-summary {
   margin-top: 20px;
   font-size: 16px;
+  text-align: center;
 }
-

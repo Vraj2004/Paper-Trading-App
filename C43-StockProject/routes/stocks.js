@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db/db');
-const path = require('path'); // ✅ ADDED: for serving HTML page
+const path = require('path'); 
 
-// GET all stocks with latest price
 router.get('/all', async (req, res) => {
   try {
     const result = await db.query(`
@@ -17,7 +16,6 @@ router.get('/all', async (req, res) => {
   }
 });
 
-// ✅ ADDED: Serve the stockChart.html page
 router.get('/chart', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/stockChart.html'));
 });
@@ -96,7 +94,6 @@ router.get("/history", async (req, res) => {
 
 
 
-// Fetch latest price for a symbol
 router.get('/:symbol', async (req, res) => {
   const { symbol } = req.params;
 
@@ -118,7 +115,6 @@ router.get('/:symbol', async (req, res) => {
   }
 });
 
-// Post request to add the data into the db
 router.post("/add-data", async (req, res) => {
   console.log("🛬 Received:", req.body);
 

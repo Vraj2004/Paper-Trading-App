@@ -3,50 +3,6 @@
   <head>
     <title>Stock Chart</title>
     <link rel="stylesheet" href="/stylesheets/stockChart.css" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        padding: 40px;
-        text-align: center;
-      }
-
-      .interval-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-      }
-
-      .interval-buttons button {
-        padding: 10px 16px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: background-color 0.3s, transform 0.2s;
-      }
-
-      .interval-buttons button.active {
-        background-color: #0056b3;
-        transform: scale(1.05);
-      }
-
-      canvas {
-        display: block;
-        margin: 30px auto;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-      }
-
-      h3 {
-        margin-top: 50px;
-      }
-    </style>
   </head>
 
   <body>
@@ -73,6 +29,23 @@
       const chartTitle = document.getElementById("chartTitle");
       let chart, predictionChart;
 
+      function formatLabel(dateStr, interval) {
+        const date = new Date(dateStr);
+        switch (interval) {
+          case "1w":
+            return date.toLocaleDateString("en-US", { weekday: "short" }); // Mon, Tue
+          case "1m":
+            return `W${Math.ceil(date.getDate() / 7)}`; // W1, W2
+          case "1y":
+            return date.toLocaleDateString("en-US", { month: "short" }); // Jan, Feb
+          case "5y":
+          case "all":
+            return date.getFullYear(); // 2020, 2021
+          default:
+            return date.toLocaleDateString();
+        }
+      }
+
       async function loadChart(interval) {
         chartTitle.textContent = `${symbol} Stock Chart (${interval.toUpperCase()})`;
 
@@ -81,7 +54,7 @@
           if (btn.dataset.interval === interval) btn.classList.add("active");
         });
 
-        let labels = [];
+        let rawLabels = [];
         let prices = [];
 
         try {
@@ -91,13 +64,15 @@
           if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data) && data.length > 0) {
-              labels = data.map((point) => point.date);
+              rawLabels = data.map((point) => point.date);
               prices = data.map((point) => point.close);
             }
           }
         } catch (err) {
           console.error("Failed to fetch data:", err);
         }
+
+        const labels = rawLabels.map((d) => formatLabel(d, interval));
 
         // --- Historical Chart ---
         if (chart) chart.destroy();
@@ -124,9 +99,16 @@
               legend: { display: false },
             },
             scales: {
-              x: { title: { display: true, text: "Date" } },
+              x: {
+                title: { display: true, text: "Date" },
+                ticks: {
+                  autoSkip: true,
+                  maxTicksLimit:
+                    interval === "all" || interval === "5y" ? 5 : 10,
+                },
+              },
               y: {
-                title: { display: true, text: "Price (USD)" },
+                title: { display: true, text: "Price" },
                 beginAtZero: false,
               },
             },
@@ -139,27 +121,27 @@
           .getElementById("predictionChart")
           .getContext("2d");
 
-        const last30 = prices.slice(-30);
+        const last30 = prices.slice(-30).map(Number);
         const futureLabels = [];
         const prediction = [];
 
-        if (last30.length > 1) {
-          const n = last30.length;
-          const x = Array.from({ length: n }, (_, i) => i + 1);
-          const y = last30.map(Number);
+        if (last30.length > 0) {
+          // 1. Moving Average
+          const avg30 = last30.reduce((a, b) => a + b, 0) / last30.length;
 
-          const xSum = x.reduce((a, b) => a + b, 0);
-          const ySum = y.reduce((a, b) => a + b, 0);
-          const xySum = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
-          const x2Sum = x.reduce((sum, xi) => sum + xi * xi, 0);
+          // 2. Simple Slope from Last 7 days
+          const recent7 = last30.slice(-7);
+          const slope =
+            recent7.length > 1
+              ? (recent7[recent7.length - 1] - recent7[0]) /
+                (recent7.length - 1)
+              : 0;
 
-          const slope = (n * xySum - xSum * ySum) / (n * x2Sum - xSum ** 2);
-          const intercept = (ySum - slope * xSum) / n;
-
+          // 3. Generate prediction with fluctuation and slope
           for (let i = 1; i <= 7; i++) {
-            const futureX = n + i;
-            const predictedY = slope * futureX + intercept;
-            prediction.push(predictedY.toFixed(2));
+            const noise = (Math.random() - 0.5) * 0.5; // Small up/down variation
+            const projected = avg30 + slope * i + noise;
+            prediction.push(projected.toFixed(2));
             futureLabels.push(`Day +${i}`);
           }
         }
@@ -188,17 +170,17 @@
             scales: {
               x: { title: { display: true, text: "Future Days" } },
               y: {
-                title: { display: true, text: "Price (USD)" },
+                title: { display: true, text: "Price" },
                 beginAtZero: false,
               },
             },
           },
         });
-      }
 
-      document.querySelectorAll(".interval-buttons button").forEach((btn) => {
-        btn.addEventListener("click", () => loadChart(btn.dataset.interval));
-      });
+        document.querySelectorAll(".interval-buttons button").forEach((btn) => {
+          btn.addEventListener("click", () => loadChart(btn.dataset.interval));
+        });
+      }
 
       loadChart("all");
     </script>

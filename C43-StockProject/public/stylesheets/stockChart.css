@@ -2,7 +2,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f7fc;
     text-align: center;
-    padding: 30px;
+    padding: 40px;
   }
   
   .chart-container {
@@ -11,13 +11,15 @@ body {
   }
   
   canvas {
-    margin: 20px 0;
+    display: block;
+    margin: 30px auto;
     border: 1px solid #ccc;
     background: white;
     padding: 10px;
-    border-radius: 10px;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
   }
-
+  
   .interval-buttons {
     display: flex;
     justify-content: center;
@@ -25,7 +27,7 @@ body {
     margin-bottom: 20px;
     flex-wrap: wrap;
   }
-
+  
   .interval-buttons button {
     padding: 10px 16px;
     background-color: #007bff;
@@ -34,15 +36,19 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
   }
-
+  
   .interval-buttons button:hover {
     background-color: #0056b3;
   }
-
-  canvas {
-    display: block;
-    margin: 0 auto;
+  
+  .interval-buttons button.active {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+  
+  h3 {
+    margin-top: 50px;
   }
   

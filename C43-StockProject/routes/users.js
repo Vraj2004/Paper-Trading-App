@@ -12,7 +12,6 @@ router.use(
     })
 );
 
-// Register
 router.post('/register', async (req, res) => {
     const { username, password } = req.body;
 
@@ -22,7 +21,6 @@ router.post('/register', async (req, res) => {
     }
 
     try {
-        // Query for inserting into DB
         const result = await db.query(
             'INSERT INTO users (username, password) VALUES ($1, $2) RETURNING userID',
             [username, password]
@@ -47,7 +45,6 @@ router.post('/register', async (req, res) => {
 });
 
 
-// Login 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 

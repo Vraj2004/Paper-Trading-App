@@ -7,13 +7,13 @@
 
   <body>
     <div class="container">
-      <button id="stocks">📈 Go to Stocks</button>
+      <button id="stocks">Go to Stocks</button>
 
       <div class="portfolio-card">
         <h2>📊 Portfolio Overview</h2>
         <p id="cashAmount" class="cash">Loading...</p>
 
-        <h3>💼 Stock Holdings</h3>
+        <h3>Stock Holdings</h3>
         <div id="stockList" class="stock-container">Loading...</div>
 
         <div class="button-group">
@@ -69,7 +69,7 @@
             if (isNaN(currValue) || isNaN(totalValue)) {
               card.innerHTML = `
                 <h3>${row.symbol}</h3>
-                <p>${row.volume} shares × ❌ Price Missing</p>
+                <p>${row.volume} shares × Price Missing</p>
               `;
               container.appendChild(card);
               return;

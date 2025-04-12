@@ -23,7 +23,6 @@ router.post('/create', async (req, res) => {
   }
 });
 
-// ✅ Get portfolios for logged-in user
 router.get('/my', async (req, res) => {
   const userID = req.session.userID;
 
@@ -124,6 +123,11 @@ router.post('/buy', async (req, res) => {
       ON CONFLICT (portfolioid, symbol)
       DO UPDATE SET volume = holding.volume + $3
     `, [portfolioID, symbol, shares]);
+    await db.query(`
+      INSERT INTO transaction (portfolioid, symbol, timestamp, type, quantity, unit_price)
+      VALUES ($1, $2, NOW(), 'buy', $3, $4)
+    `, [portfolioID, symbol, shares, price]);
+
     await db.query('COMMIT');
 
     res.json({ message: 'Stock purchased' });
@@ -155,6 +159,10 @@ router.post('/sell', async (req, res) => {
     await db.query('UPDATE portfolio SET cashAmount = cashAmount + $1 WHERE portfolioID = $2', [totalGain, portfolioID]);
     await db.query('UPDATE holding SET volume = volume - $1 WHERE portfolioid = $2 AND symbol = $3',
       [shares, portfolioID, symbol]);
+    await db.query(`
+      INSERT INTO transaction (portfolioid, symbol, timestamp, type, quantity, unit_price)
+      VALUES ($1, $2, NOW(), 'sell', $3, $4)
+      `, [portfolioID, symbol, shares, price]);
     await db.query('COMMIT');
 
     res.json({ message: 'Stock sold' });
