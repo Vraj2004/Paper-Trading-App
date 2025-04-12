@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Stocklist</title>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+      }
+
+      h1 {
+        text-align: center;
+        margin-top: 20px;
+        color: #444;
+      }
+
+      form {
+        max-width: 500px;
+        margin: 30px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      input,
+      select,
+      button {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Create a New Stocklist</h1>
+    <form id="createStocklistForm">
+      <label for="priv_status">Privacy Status:</label>
+      <select id="priv_status" name="priv_status" required>
+        <option value="public">Public</option>
+        <option value="private">Private</option>
+      </select>
+
+      <label for="symbols">Stock Symbols (comma-separated):</label>
+      <input
+        type="text"
+        id="symbols"
+        name="symbols"
+        placeholder="e.g., AAPL, TSLA, AMZN"
+      />
+
+      <button type="submit">Create Stocklist</button>
+    </form>
+
+    <script>
+      //check params for stocklistID
+      let method = "POST";
+      let url = "/stocklist/create";
+      let params = new URLSearchParams(window.location.search);
+      let stocklistID = params.get("stocklistID");
+      console.log(stocklistID);
+      if (!stocklistID) {
+        method = "POST";
+      } else {
+        method = "PUT";
+        url = `/stocklist/${stocklistID}`;
+      }
+      document
+        .getElementById("createStocklistForm")
+        .addEventListener("submit", async (event) => {
+          event.preventDefault();
+
+          const priv_status = document.getElementById("priv_status").value;
+          const symbols = document
+            .getElementById("symbols")
+            .value.split(",")
+            .map((s) => s.trim());
+
+          try {
+            const response = await fetch(url, {
+              method: method,
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ priv_status, symbols }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              alert("Stocklist created/edited successfully!");
+              console.log(data);
+              // Redirect to the stocklist home page or any other page
+              window.location.href = "/stocklistHome.html";
+            } else {
+              const error = await response.json();
+              alert("Error: " + error.error);
+            }
+          } catch (err) {
+            console.error("Error:", err);
+            alert("An unexpected error occurred.");
+          }
+        });
+    </script>
+  </body>
+</html>

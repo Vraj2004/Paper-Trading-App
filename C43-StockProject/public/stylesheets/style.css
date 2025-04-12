@@ -4,5 +4,51 @@ body {
 }
 
 a {
-  color: #00B7FF;
+  color: #00b7ff;
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  background-color: #f4f4f4;
+  padding: 10px;
+  a {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  a:hover {
+    background-color: #e0e0e0;
+  }
+}
+#logout {
+  background-color: #ff5e57;
+  color: white;
+}
+
+#logout:hover {
+  background-color: #d94b48;
+}
+
+#stocks {
+  background-color: #28a745;
+  color: white;
+}
+#friends {
+  background-color: hotpink;
+  color: white;
+}
+#stocks:hover {
+  background-color: #218838;
+}
+
+#stocklists {
+  background-color: purple;
+  color: white;
 }

@@ -3,13 +3,24 @@
   <head>
     <title>Home</title>
     <link rel="stylesheet" href="/stylesheets/home.css" />
+    <script src="/javascripts/navigationbar.js" defer></script>
   </head>
   <body>
-    <button id="logout">Logout</button>
-
     <div class="dashboard-container">
       <h1>Welcome to Your Dashboard</h1>
 
+      <nav>
+        <div>
+          <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+          <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+          <a id="friends" href="/friends.html">Go to Friends</a>
+          <a id="home" href="/home.html">Go to Home</a>
+        </div>
+
+        <div>
+          <button id="logout">Logout</button>
+        </div>
+      </nav>
       <div class="top-controls">
         <button id="addPortfolioBtn">Add Portfolio</button>
       </div>
@@ -96,23 +107,6 @@
             alert("An error occurred while creating portfolio.");
           }
         });
-
-      document.getElementById("logout").addEventListener("click", async () => {
-        try {
-          const res = await fetch("/users/logout", {
-            method: "GET",
-            credentials: "include",
-          });
-          if (res.ok) {
-            window.location.href = "/index.html";
-          } else {
-            alert("Logout failed");
-          }
-        } catch (err) {
-          console.error("Logout error:", err);
-          alert("An error occurred during logout.");
-        }
-      });
 
       document.getElementById("stocklists").addEventListener("click", () => {
         window.location.href = "/stocklistHome.html";
