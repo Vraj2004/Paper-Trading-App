@@ -127,7 +127,7 @@
             deleteButton.onclick = async () => {
               try {
                 const response = await fetch(
-                  `/stocklist/delete/${stocklist.stocklistID}`,
+                  `/stocklist/${stocklist.stocklistID}`,
                   {
                     method: "DELETE",
                   }
@@ -153,8 +153,17 @@
               window.location.href = `/stocklist/create.html?stocklistID=${stocklist.stocklistID}`;
             };
             stocklistDiv.appendChild(editButton);
-          }
 
+            if (stocklist.priv_status == "private") {
+              const shareButton = document.createElement("button");
+              shareButton.textContent = "Share";
+              shareButton.classList.add("share-button");
+              shareButton.onclick = async () => {
+                window.location.href = `/stocklist/friends.html?stocklistID=${stocklist.stocklistID}`;
+              };
+              stocklistDiv.appendChild(shareButton);
+            }
+          }
           const stocksList = document.createElement("ul");
           stocksList.classList.add("stocks");
           stocklist.stocks.forEach((stock) => {

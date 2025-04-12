@@ -1,5 +1,5 @@
 async function loadFriends() {
-    userID = localStorage.getItem("userID");
+    const userID = localStorage.getItem("userID");
     if (!userID) {
         console.log("User ID not found in local storage");
         return;

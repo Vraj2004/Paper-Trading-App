@@ -14,6 +14,7 @@ var friendsRouter = require('./routes/friends');
 var portfolioRouter = require('./routes/portfolio');
 var stockRouter = require('./routes/stocks');
 var stocklistRouter = require('./routes/stocklist');
+var reviewsRouter = require('./routes/reviews');
 
 var app = express();
 
@@ -47,6 +48,7 @@ app.use('/portfolio', portfolioRouter);
 app.use('/stocks', stockRouter);
 app.use('/friends', friendsRouter);
 app.use('/stocklist', stocklistRouter);
+app.use('/reviews', reviewsRouter);
 
 
 // catch 404 and forward to error handler

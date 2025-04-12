@@ -64,6 +64,7 @@ async function ifOwner(stocklistID, userID) {
         throw new Error('Failed to check stocklist ownership');
     }
 }
+
 async function IfUserCanView(stocklistID, userID) {
     console.log("stocklistID, userID", stocklistID, userID)
     if (!stocklistID) {
