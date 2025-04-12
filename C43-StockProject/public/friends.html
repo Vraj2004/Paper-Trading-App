@@ -46,7 +46,7 @@
         }
         const friends = await response.json();
         const friendList = document.querySelector(".friend-list");
-        friendList.innerHTML = ""; // Clear existing list
+        friendList.innerHTML = "";
         if (friends.length === 0) {
           const li = document.createElement("li");
           li.textContent = "No friends found.";

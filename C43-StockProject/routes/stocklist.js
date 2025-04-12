@@ -224,6 +224,10 @@ router.put('/:stocklistID', async (req, res) => {
         if (!await ifOwner(stocklistID, userID)) {
             return res.status(401).json({ error: "Not the owner of the stocklist" });
         }
+        const responseStatus = await db.query(
+            `UPDATE stocklist SET priv_status = $1 WHERE stocklistID = $2 RETURNING *`,
+            [priv_status, stocklistID]
+        );
         const response = await db.query(
             `DELETE FROM stocklistStock WHERE stocklistID = $1 RETURNING *`,
             [stocklistID]

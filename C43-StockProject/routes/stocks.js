@@ -64,7 +64,7 @@ router.get("/history", async (req, res) => {
       intervalCondition = "AND timestamp >= NOW() - INTERVAL '5 years'";
       break;
     case "all":
-      intervalCondition = ""; // no filter
+      intervalCondition = ""; 
       break;
     default:
       return res.status(400).json({ error: "Invalid interval" });
@@ -117,7 +117,7 @@ router.get('/:symbol', async (req, res) => {
 
 
 router.post("/add-data", async (req, res) => {
-  console.log("🛬 Received:", req.body);
+  console.log("Received:", req.body);
 
   const {
     timestamp,
@@ -158,13 +158,4 @@ router.post("/add-data", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-
-
-
-
-
-
-
 module.exports = router;

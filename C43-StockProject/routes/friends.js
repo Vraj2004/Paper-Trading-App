@@ -43,10 +43,10 @@ async function requestExists(userID1, userID2) {
         if (result.rows.length === 0) {
             return false;
         }
-        console.log("timecheck", result.rows[0].last_updated, Date.now() - timeout);
+        console.log("timecheck1", new Date(result.rows[0].last_updated).getTime() + timeout, Date.now())
 
         //handle the case where the request was rejected
-        if (result.rows[0].status === 'rejected' && new Date(result.rows[0].last_updated).getTime() < Date.now() - timeout) {
+        if (result.rows[0].status === 'rejected' && new Date(result.rows[0].last_updated).getTime() + timeout < Date.now()) {
             console.log("timecheck", result.rows[0].last_updated, Date.now() - timeout);
             console.log("timeout completed")
             const updateResult = await db.query(
