@@ -7,7 +7,13 @@ CREATE DATABASE stockproject;
 CREATE TABLE stock (
     symbol VARCHAR(10) PRIMARY KEY,
     curr_value NUMERIC(10, 2) CHECK (curr_value >= 0)
+    cov NUMERIC(10, 2),
+    beta NUMERIC(10, 2)
 );
+
+
+
+
 -- Create Users Table
 CREATE TABLE users (
     userID SERIAL PRIMARY KEY,
@@ -71,18 +77,16 @@ CREATE TABLE review (
 CREATE TABLE portfolio (
     portfolioID SERIAL PRIMARY KEY,
     ownerID INT REFERENCES users(userID),
-    cashAmount NUMERIC(15, 2) DEFAULT 0.00 CHECK (cashAmount >= 0)
+    cashAmount DECIMAL(20, 2) DEFAULT 0.00 CHECK (cashAmount >= 0)
 );
 
 -- Create Holding Table
 CREATE TABLE holding (
     portfolioID INT REFERENCES portfolio(portfolioID),
     symbol VARCHAR(10) REFERENCES stock(symbol),
-    volume NUMERIC(10, 2) CHECK (volume >= 0),
+    volume DECIMAL(20, 2) CHECK (volume >= 0),
     PRIMARY KEY (portfolioID, symbol)
 );
-
-
 
 -- Create Transaction Table
 CREATE TABLE transaction (
@@ -91,18 +95,24 @@ CREATE TABLE transaction (
     symbol VARCHAR(10) REFERENCES stock(symbol),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     type VARCHAR(20) CHECK (type IN ('buy', 'sell', 'add_cash', 'withdraw_cash')),
-    quantity NUMERIC(10, 2) CHECK (quantity >= 0),
-    unit_price NUMERIC(10, 2) CHECK (unit_price >= 0)
+    quantity DECIMAL(20, 2) CHECK (quantity >= 0),
+    unit_price DECIMAL(20, 2) CHECK (unit_price >= 0)
 );
 
 -- Create Daily Stock Table
 CREATE TABLE dailyStock (
     timestamp DATE,
     symbol VARCHAR(10) REFERENCES stock(symbol),
-    open_price NUMERIC(10, 2),
-    high_price NUMERIC(10, 2),
-    low_price NUMERIC(10, 2),
-    close_price NUMERIC(10, 2),
+    open_price DECIMAL(20, 2),
+    high_price DECIMAL(20, 2),
+    low_price DECIMAL(20, 2),
+    close_price DECIMAL(20, 2),
     volume BIGINT CHECK (volume >= 0),
     PRIMARY KEY (timestamp, symbol)
+);
+
+CREATE TABLE market (
+    timestamp DATE PRIMARY KEY,
+    volume BIGINT,          -- Total market volume (sum of all symbol volumes)
+    avg_close DECIMAL(20, 2) -- Sum of close_price for all symbols (equal weighting)
 );

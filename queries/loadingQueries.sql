@@ -21,6 +21,7 @@ DELIMITER ',' CSV HEADER;
 
 -- Now we have loaded both the stock table along with the dailyStock table
 
+
 -- Update for already loaded data: 
 UPDATE stock s
 SET curr_value = d.close_price
@@ -31,7 +32,46 @@ FROM (
 ) d
 WHERE s.symbol = d.symbol;
 
--- Create triggers (later)
+--UPDATE for already loaded data:
+UPDATE stock s
+SET COV = subquery.stddev_close_price / subquery.avg_close_price
+FROM (
+    SELECT 
+        symbol,
+        STDDEV(close_price) AS stddev_close_price,
+        AVG(close_price) AS avg_close_price
+    FROM dailyStock
+    GROUP BY symbol
+) subquery
+WHERE s.symbol = subquery.symbol;
+
+
+--UPDATE for already loaded data:
+
+
+INSERT INTO market (timestamp, volume, avg_close)
+SELECT 
+    timestamp,
+    SUM(volume) AS total_volume, -- Total market volume (optional)
+    AVG(close_price) AS avg_close
+FROM historical_stock 
+GROUP BY timestamp;
+
+
+--UPDATE TO ADD BETA
+UPDATE stock s
+SET beta = sub.beta
+FROM (
+    SELECT 
+        ds.symbol,
+        -- Calculate beta = Cov(stock_close, market_avg_close) / Var(market_avg_close)
+        COVAR_POP(ds.close_price, m.avg_close) / NULLIF(VAR_POP(m.avg_close), 0) AS beta
+    FROM historical_stock ds
+    JOIN market m ON ds.timestamp = m.timestamp
+    GROUP BY ds.symbol
+) sub
+WHERE s.symbol = sub.symbol;
+
 
 CREATE OR REPLACE FUNCTION update_stock_value()
 RETURNS TRIGGER AS $$
