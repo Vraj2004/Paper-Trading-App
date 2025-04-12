@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/db'); 
+const db = require('../db/db');
 const session = require('express-session');
 
 router.use(
@@ -34,7 +34,7 @@ router.post('/register', async (req, res) => {
         await db.query(
             'INSERT INTO portfolio (ownerID, cashAmount) VALUES ($1, $2)',
             [newUserID, 0.00]
-          );
+        );
 
         res.status(201).send({
             message: 'User registered successfully',
@@ -50,7 +50,7 @@ router.post('/register', async (req, res) => {
 // Login 
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
-
+    console.log(username, password);
     try {
         const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
 

@@ -9,13 +9,40 @@
     <link rel="stylesheet" href="/stylesheets/style.css" />
   </head>
   <script id="load-script">
+    function acceptRejectButtons(button, senderid) {
+      if (!senderid) {
+        console.error("Sender ID is undefined or null");
+        return;
+      }
+      button.addEventListener("click", async (e) => {
+        const action = e.target.dataset.action;
+        try {
+          const response = await fetch(`/friends/reqs/${action}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              senderID: senderid,
+            }),
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || "Failed to process request");
+          }
+          alert(`Request ${action}ed successfully!`);
+        } catch (error) {
+          alert(`Error: ${error.message}`);
+          console.error("Error processing request:", error);
+        }
+      });
+    }
     document.addEventListener("DOMContentLoaded", async () => {
       const userID = localStorage.getItem("userID");
       //GET FRIENDS
       try {
         const response = await fetch(`/friends/${userID}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch friends list");
+          const data = await response.json();
+          throw new Error(data.error);
         }
         const friends = await response.json();
         const friendList = document.querySelector(".friend-list");
@@ -26,19 +53,27 @@
           friendList.appendChild(li);
         } else {
           friends.forEach((friend) => {
+            console.log(friend);
             const li = document.createElement("li");
-            li.textContent = friend.friendID + ": username: " + friend.username;
+            li.textContent = friend.friendid + ": username: " + friend.username;
+            const deleteFriendButton = document.createElement("button");
+            deleteFriendButton.id = "delete_" + friend.friendid;
+            deleteFriendButton.textContent = "❌";
+            deleteFriendButton.setAttribute("data-action", "reject");
+            acceptRejectButtons(deleteFriendButton, friend.friendid);
+            li.appendChild(deleteFriendButton);
             friendList.appendChild(li);
           });
         }
       } catch (error) {
-        alert("Error fetching friends:", error);
+        console.error("Error fetching friends:", error);
       }
       //GET SENT FRIEND REQUESTS
       try {
         const response = await fetch(`friends/reqs/sent/${userID}`);
         if (!response.ok) {
-          throw new Error("Failed to fetch sent friend requests");
+          const data = await response.json();
+          throw new Error(data.error || "Failed to fetch sent friend requests");
         }
         const sentRequests = await response.json();
         console.log(sentRequests);
@@ -63,7 +98,8 @@
           });
         }
       } catch (error) {
-        alert("Error fetching friend requests:", error);
+        console.error("Error fetching sent friend requests:", error);
+        console.error("Error fetching sent friend requests:", error);
       }
       //GET RECIEVED FRIEND REQUESTS
       try {
@@ -80,23 +116,27 @@
           recList.appendChild(li);
         } else {
           reqs.forEach((request) => {
+            console.log(request.senderid);
             const li = document.createElement("li");
             li.textContent =
               request.senderid + ": username: " + request.username;
             const acceptButton = document.createElement("button");
-            acceptButton.id = request.senderid;
-            acceptButton.textContent = "Accept";
+            acceptButton.id = "accept_" + request.senderid;
+            acceptButton.textContent = "✅";
+            acceptButton.setAttribute("data-action", "accept");
             const rejectButton = document.createElement("button");
-            rejectButton.id = request.senderid;
-            rejectButton.textContent = "Reject";
-
+            rejectButton.id = "reject_" + request.senderid;
+            rejectButton.textContent = "❌";
+            rejectButton.setAttribute("data-action", "reject");
+            acceptRejectButtons(acceptButton, request.senderid);
+            acceptRejectButtons(rejectButton, request.senderid);
             li.appendChild(acceptButton);
             li.appendChild(rejectButton);
             recList.appendChild(li);
           });
         }
       } catch (error) {
-        alert("Error fetching friend requests:", error);
+        console.error("Error fetching recieved friend requests:", error);
       }
     });
   </script>
@@ -120,36 +160,12 @@
           } else alert("Friend request sent!");
           sendRequestForm.reset();
         } catch (error) {
-          alert("Error sending friend request:", error);
+          console.error("Error sending friend request:", error);
         }
       });
     });
   </script>
-  <script id="accept/reject-request-script">
-    document.addEventListener("DOMContentLoaded", () => {
-      const acceptRejectButtons = document.querySelectorAll(".accept-reject");
-      acceptRejectButtons.forEach((button) => {
-        button.addEventListener("click", async (e) => {
-          const requestID = e.target.dataset.requestId;
-          const action = e.target.dataset.action;
-          try {
-            const response = await fetch(
-              `/friends/reqs/${action}/${requestID}`,
-              {
-                method: "POST",
-              }
-            );
-            if (!response.ok) {
-              throw new Error("Failed to process request");
-            }
-            alert(`Request ${action}ed successfully!`);
-          } catch (error) {
-            alert("Error processing request:", error);
-          }
-        });
-      });
-    });
-  </script>
+
   <body>
     <nav>
       <div>

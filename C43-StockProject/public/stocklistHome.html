@@ -3,9 +3,173 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stocklist</title>
+    <title>Stock Lists</title>
+    <link rel="stylesheet" href="/stylesheets/stocklist.css" />
+    <script src="/javascripts/navigationbar.js"></script>
+    <link rel="stylesheet" href="/stylesheets/style.css" />
+    <script src="/javascripts/friendLoadScript.js"></script>
   </head>
   <body>
-    <h1>Welcome to Stocklists</h1>
+    <nav>
+      <div>
+        <a id="stocks" href="/stocksHome.html">Go to Stocks</a>
+        <a id="stocklists" href="/stocklistHome.html">Go to Stocklists</a>
+        <a id="friends" href="/friends.html">Go to Friends</a>
+        <a id="home" href="/home.html">Go to Home</a>
+      </div>
+
+      <div>
+        <button id="logout">Logout</button>
+      </div>
+    </nav>
+    <h1>Stock Lists</h1>
+    <div class="container">
+      <div class="column">
+        <h2>Public Stocklists</h2>
+
+        <ul id="public-stocklists"></ul>
+      </div>
+      <div class="column">
+        <a
+          id="addStockList"
+          href="/stocklist/create.html"
+          class="add-stocklist-button"
+          >+</a
+        >
+        <h2>My Stocklists</h2>
+
+        <ul id="my-stocklists"></ul>
+      </div>
+      <div class="column">
+        <h2>Friends' Stocklists</h2>
+        <ul id="friends-stocklists"></ul>
+      </div>
+    </div>
+    <!-- Closing the container div -->
+
+    <script>
+      async function fetchStocklists() {
+        try {
+          // Fetch public stocklists
+          const publicResponse = await fetch("/stocklist/public");
+          const publicStocklists = await publicResponse.json();
+          displayStocklists(publicStocklists, "public-stocklists");
+
+          // Fetch My stocklists
+          const userID = localStorage.getItem("userID"); // Replace with actual user ID from session
+          const myResponse = await fetch(`/stocklist/user/${userID}`);
+          const myStocklist = await myResponse.json();
+          displayStocklists(myStocklist, "my-stocklists");
+
+          // Fetch Friends' stocklists
+          const friends = await loadFriends();
+          const friendsStocklists =
+            document.getElementById("friends-stocklists");
+          for (const friend of friends) {
+            console.log(friend.friendid);
+            const friendResponse = await fetch(
+              `/stocklist/user/${friend.friendid}`
+            );
+            const friendStocklists = await friendResponse.json();
+
+            // Create a list item and container for the friend's stocklists
+            const friendListItem = document.createElement("li");
+            const friendStocklistContainer = document.createElement("ul");
+            friendStocklistContainer.id = `${friend.friendid}_friendid`;
+            console.log("friendStocklists", friendStocklistContainer.id);
+
+            // Append the container to the DOM before calling displayStocklists
+            friendListItem.appendChild(friendStocklistContainer);
+            friendsStocklists.appendChild(friendListItem);
+
+            // Now call displayStocklists
+            displayStocklists(friendStocklists, `${friend.friendid}_friendid`);
+          }
+        } catch (error) {
+          console.error("Error fetching stocklists:", error);
+        }
+      }
+
+      function displayStocklists(stocklists, containerId) {
+        console.log(stocklists, containerId);
+        const container = document.getElementById(containerId);
+        console.log(container);
+        container.innerHTML = ""; // Clear previous content
+        console.log(stocklists);
+
+        if (!stocklists || stocklists.length === 0) {
+          const noStocklistsMessage = document.createElement("li");
+          noStocklistsMessage.textContent = "No stocklists available.";
+          container.appendChild(noStocklistsMessage);
+          return;
+        }
+
+        stocklists.forEach((stocklist) => {
+          const stocklistDiv = document.createElement("li");
+          stocklistDiv.classList.add("stocklist");
+
+          const title = document.createElement("h3");
+          title.textContent = `Stocklist ID: ${stocklist.stocklistID} (Owner: ${stocklist.username})`;
+          stocklistDiv.appendChild(title);
+          const status = document.createElement("p");
+          status.textContent = `Status: ${stocklist.priv_status}`;
+          stocklistDiv.appendChild(status);
+          const reviewLink = document.createElement("a");
+          reviewLink.href = `/reviews.html?stocklistID=${stocklist.stocklistID}`;
+          reviewLink.textContent = "View Reviews";
+          stocklistDiv.appendChild(reviewLink);
+
+          if (containerId === "my-stocklists") {
+            console.log("my-stocklists");
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.classList.add("delete-button");
+            deleteButton.onclick = async () => {
+              try {
+                const response = await fetch(
+                  `/stocklist/delete/${stocklist.stocklistID}`,
+                  {
+                    method: "DELETE",
+                  }
+                );
+                if (response.ok) {
+                  alert("Stocklist deleted successfully!");
+                  fetchStocklists(); // Refresh the stocklists
+                } else {
+                  const error = await response.json();
+                  alert("Error: " + error.error);
+                }
+              } catch (err) {
+                console.error("Error:", err);
+                alert("An unexpected error occurred.");
+              }
+            };
+            stocklistDiv.appendChild(deleteButton);
+
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.classList.add("edit-button");
+            editButton.onclick = () => {
+              window.location.href = `/stocklist/create.html?stocklistID=${stocklist.stocklistID}`;
+            };
+            stocklistDiv.appendChild(editButton);
+          }
+
+          const stocksList = document.createElement("ul");
+          stocksList.classList.add("stocks");
+          stocklist.stocks.forEach((stock) => {
+            const stockItem = document.createElement("li");
+            stockItem.textContent = stock.symbol;
+            stocksList.appendChild(stockItem);
+          });
+
+          stocklistDiv.appendChild(stocksList);
+          container.appendChild(stocklistDiv);
+        });
+      }
+
+      // Fetch and display stocklists on page load
+      fetchStocklists();
+    </script>
   </body>
 </html>

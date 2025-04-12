@@ -5,11 +5,12 @@ body {
   padding: 0;
   background-color: #f9f9f9;
   color: #333;
+  line-height: 1.6;
 }
 
 h1 {
   text-align: center;
-  margin-top: 20px;
+  margin: 20px 0;
   color: #444;
 }
 
@@ -25,6 +26,7 @@ div.section {
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 
 div.section h2 {
@@ -37,7 +39,7 @@ div.section h2 {
 ul {
   list-style-type: none;
   padding: 0;
-  background-color: #f9f9f9;
+  margin: 0;
 }
 
 ul li {
@@ -49,6 +51,10 @@ ul li:last-child {
   border-bottom: none;
 }
 
+ul li button {
+  float: right;
+  margin-left: 2%;
+}
 ul li:hover {
   background-color: #f1f1f1;
 }
@@ -72,12 +78,18 @@ form.send-request input {
 
 form.send-request button {
   padding: 10px;
-  background-color: #007bff;
+  background-color: #28a745;
   color: #fff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
+
+form.send-request button:hover {
+  background-color: #218838;
+}
+
+/* Status */
 .status {
   font-size: 14px;
   font-style: italic;
@@ -86,8 +98,37 @@ form.send-request button {
   text-align: right;
 }
 
-form.send-request button:hover {
-  background-color: #0056b3;
+/* Navigation Bar */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #007bff;
+  padding: 10px 20px;
+  color: #fff;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  margin-right: 15px;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+nav button {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+nav button:hover {
+  background-color: #a71d2a;
 }
 
 /* Responsive Design */
@@ -102,5 +143,14 @@ form.send-request button:hover {
 
   div[style="display: flex; gap: 20px"] {
     flex-direction: column;
+  }
+
+  nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  nav a {
+    margin-bottom: 10px;
   }
 }

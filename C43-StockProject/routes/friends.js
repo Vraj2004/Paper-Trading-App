@@ -3,6 +3,32 @@ const router = express.Router();
 const db = require('../db/db');
 
 const timeout = 5 * 60 * 1000; // 5 minute
+async function removeFromSharedStocklist(userID1, userID2) {
+    console.log(userID1, userID2);
+    if (!userID1 || !userID2) {
+        return false;
+    }
+    // //get all owned by userID1
+    // const ownedByUser1 = await getUserStockLists(userID1);
+    // const ownedByUser2 = await getUserStockLists(userID2);
+
+    try {
+
+        const test = await db.query(
+            `DELETE FROM sharedStocklist WHERE (friendID = $1 AND stocklistID IN (SELECT stocklistID FROM stocklist WHERE ownerID = $2))
+            OR (friendID = $2 AND stocklistID IN (SELECT stocklistID FROM stocklist WHERE ownerID = $1)) returning *`,
+            [userID1, userID2]
+        );
+        console.log("deleted rows:", test.rows);
+        return test.rows;
+
+
+    } catch (err) {
+        console.error(err);
+        throw new Error('Failed to remove from shared stocklist');
+    }
+
+}
 async function requestExists(userID1, userID2) {
     console.log(userID1, userID2);
     if (!userID1 || !userID2) {
@@ -77,14 +103,14 @@ router.get('/:userID', async (req, res) => {
 });
 
 //make a friend request
-router.post('/reqs/create/', async (req, res) => {
+router.post('/reqs/create', async (req, res) => {
     const userID = req.session.userID;
     const { recieverID } = req.body;
     console.log(userID, recieverID);
     if (!userID || !recieverID) {
         return res.status(400).json({ error: "Invalid input" });
     }
-    if (userID === recieverID) {
+    if (userID == recieverID) {
         return res.status(400).json({ error: "Cannot send friend request to yourself" });
     }
     //check if the user exists
@@ -119,7 +145,7 @@ router.post('/reqs/create/', async (req, res) => {
 });
 
 //reject a friend request
-router.post('/reqs/reject/', async (req, res) => {
+router.post('/reqs/reject', async (req, res) => {
     const userID = req.session.userID;
     const { senderID } = req.body;
     console.log(userID, senderID);
@@ -137,13 +163,18 @@ router.post('/reqs/reject/', async (req, res) => {
         return res.status(400).json({ error: checkReq });
     }
     try {
-        const response = await db.query(
+        let response = await db.query(
             `UPDATE friendReq SET status = 'rejected' WHERE senderID = $1 AND receiverID = $2 AND status!='rejected' RETURNING *`,
             [senderID, userID]
         );
         if (response.rows.length === 0) {
-            return res.status(400).json({ error: "sender does not exist" });
+            response = await db.query(
+                `UPDATE friendReq SET status = 'rejected' WHERE senderID = $1 AND receiverID = $2 AND status!='rejected' RETURNING *`,
+                [userID, senderID]
+            );
+            if (response.rows === 0) return res.status(400).json({ error: "sender does not exist" });
         }
+        removeFromSharedStocklist(senderID, userID);
         return res.status(200).json(response.rows);
     }
     catch (err) {
@@ -154,10 +185,10 @@ router.post('/reqs/reject/', async (req, res) => {
 });
 
 //accept a friend request
-router.post('/reqs/accept/', async (req, res) => {
+router.post('/reqs/accept', async (req, res) => {
     const userID = req.session.userID;
     const { senderID } = req.body;
-    console.log(userID, senderID);
+    console.log(userID, req.body);
     if (!userID || !senderID) {
         return res.status(400).json({ error: "Invalid input" });
     }
@@ -198,7 +229,7 @@ router.get('/reqs/sent/:userID', async (req, res) => {
         const response = await db.query(
             `SELECT friendreq.receiverid AS receiverid, username,status
             FROM friendreq JOIN users ON friendreq.receiverid = users.userid
-            WHERE senderid = $1 AND status!='accepted'`,
+            WHERE senderid = $1 AND status='pending'`,
             [userID]
         );
         return res.status(200).json(response.rows);
@@ -220,9 +251,10 @@ router.get('/reqs/recieved/:userID', async (req, res) => {
             status
             FROM friendreq 
             JOIN users sender ON friendreq.senderid = sender.userid
-            WHERE receiverid = $1 AND status!='accepted'`,
+            WHERE receiverid = $1 AND status='pending'`,
             [userID]
         );
+        console.log(response.rows);
         return res.status(200).json(response.rows);
     }
     catch (err) {

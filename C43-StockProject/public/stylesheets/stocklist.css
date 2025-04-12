@@ -1,0 +1,118 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  color: #2c3e50;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px auto;
+  width: 100%;
+}
+
+.column {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+a {
+  display: inline-block;
+  text-decoration: none;
+  background-color: #3498db;
+  color: #fff !important;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+a:hover {
+  background-color: #2980b9;
+}
+.column h2 {
+  margin-top: 0;
+  color: #34495e;
+  text-align: center;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stocklist {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.stocklist h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  color: #2980b9;
+}
+
+.stocks {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stocks li {
+  padding: 5px 10px;
+  margin: 5px 0;
+  background-color: #e8f6f3;
+  border-radius: 4px;
+  color: #16a085;
+  font-weight: bold;
+}
+
+.stocks li:hover {
+  background-color: #d1f2eb;
+  cursor: pointer;
+}
+
+p {
+  color: #7f8c8d;
+  font-style: italic;
+  text-align: center;
+}
+
+.create-button-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+#create-stocklist-button {
+  background-color: #3498db;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+#create-stocklist-button:hover {
+  background-color: #2980b9;
+}
+.column {
+  width: 60%;
+}
