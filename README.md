@@ -1,2 +1,1 @@
-# C43-StockProject
-CSCC43 stock project
+# Paper trading App using Node.js, Express.js, HTML, CSS
